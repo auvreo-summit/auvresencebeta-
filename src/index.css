@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url('/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); }
+
+
+@layer base {
+  :root {
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    /* Auvresence tokens */
+    --auv-obsidian: #0d0608;
+    --auv-wine-900: #1a0206;
+    --auv-wine-800: #24040a;
+    --auv-wine-600: #4e0a17;
+    --auv-champagne: #edd2ab;
+    --auv-gold: #cf9f5d;
+    --auv-ivory: #faf6f0;
+    --auv-hairline: rgb(207 159 93 / 0.18);
+    --auv-radius-sm: 4px;   /* inputs, buttons */
+    --auv-radius-md: 8px;   /* sheets, objects (event, credential) */
+    --auv-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Visible keyboard focus everywhere, without ring on mouse click */
+  :focus-visible {
+    outline: 2px solid var(--auv-champagne);
+    outline-offset: 2px;
+  }
+  button, [role="button"], a, select, summary { touch-action: manipulation; }
+
+  /* Respect phone safe areas for full-bleed layouts */
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0d0608;
+    color: #faf6f0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-serif);
+    text-wrap: balance;
+  }
+
+  .font-mono, .tabular-nums {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Auvresence entrance motion — slow and quiet */
+@keyframes auv-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes auv-breathe {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.06); }
+}
+.auv-rise { animation: auv-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.auv-rise-2 { animation: auv-rise 0.9s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.auv-rise-3 { animation: auv-rise 0.9s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.auv-breathe { animation: auv-breathe 14s ease-in-out infinite; }
+
+
+/* ---- Shared primitives (use instead of ad-hoc one-off styles) ---- */
+.auv-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 0 1.25rem;
+  border-radius: var(--auv-radius-sm);
+  font-size: 0.875rem; font-weight: 500; letter-spacing: 0.01em;
+  transition: background-color 0.18s var(--auv-ease), border-color 0.18s var(--auv-ease), color 0.18s var(--auv-ease), opacity 0.18s;
+  cursor: pointer; white-space: nowrap;
+}
+.auv-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.auv-btn-primary { background: var(--auv-gold); color: var(--auv-obsidian); }
+.auv-btn-primary:hover:not(:disabled) { background: var(--auv-champagne); }
+.auv-btn-secondary { border: 1px solid var(--auv-hairline); color: var(--auv-champagne); }
+.auv-btn-secondary:hover:not(:disabled) { border-color: var(--auv-gold); background: var(--auv-wine-900); }
+.auv-btn-text { color: var(--auv-champagne); padding: 0 0.25rem; }
+.auv-btn-text:hover:not(:disabled) { color: var(--auv-ivory); }
+.auv-btn-danger { border: 1px solid rgb(220 90 90 / 0.5); color: #f0a4a4; }
+.auv-btn-danger:hover:not(:disabled) { background: rgb(220 90 90 / 0.12); }
+
+.auv-input {
+  width: 100%; min-height: 44px; padding: 0.625rem 0.875rem;
+  background: var(--auv-wine-900); color: var(--auv-ivory);
+  border: 1px solid var(--auv-hairline); border-radius: var(--auv-radius-sm);
+  font-size: 1rem; /* 16px prevents iOS zoom-on-focus */
+}
+.auv-input:focus { outline: none; border-color: var(--auv-gold); }
+
+.auv-hairline { border-color: var(--auv-hairline); }
+.auv-status { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; padding: 0.125rem 0.5rem; border-radius: 999px; border: 1px solid var(--auv-hairline); color: var(--auv-champagne); }
+
+/* Layout-preserving loading */
+@keyframes auv-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.auv-skeleton {
+  border-radius: var(--auv-radius-sm);
+  background: linear-gradient(90deg, rgb(237 210 171 / 0.05) 25%, rgb(237 210 171 / 0.11) 50%, rgb(237 210 171 / 0.05) 75%);
+  background-size: 200% 100%; animation: auv-shimmer 1.6s linear infinite;
+}
+
+html { color-scheme: dark; }
+body { margin: 0; }
+button:not(:disabled), a { -webkit-tap-highlight-color: transparent; }
+input, textarea, select { max-width: 100%; }
+.auv-input:focus-visible { outline: 2px solid var(--auv-champagne); outline-offset: 3px; }
+
+.create-section-label { padding-top: 1.5rem; border-top: 1px solid rgb(237 210 171 / .14); color: var(--auv-gold); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .22em; }
+@media (max-width: 640px) { .auv-entrance main { padding-top: 8vh; } }

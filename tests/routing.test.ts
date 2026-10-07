@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { computeVenueRoute } from '../src/db/queries.ts';
+const venues = [1, 2, 3].map(id => ({ id, name: `Place ${id}`, floor: 'Garden', zone: 'East', operationalStatus: 'OPEN', accessible: true }));
+const edge = (fromVenueId: number, toVenueId: number, distanceMeters: number, accessible = true) => ({ fromVenueId, toVenueId, distanceMeters, accessible, isCrossFloor: false });
+const route = (edges: ReturnType<typeof edge>[], extra = {}) => computeVenueRoute({ venues, edges, fromVenueId: 1, toVenueId: 3, ...extra });
+test('disconnected places never produce an invented direct route', () => { const r = route([]); assert.equal(r.reachable, false); assert.deepEqual(r.steps, []); });
+test('Dijkstra selects the shortest connected route', () => { const r = route([edge(1,3,100), edge(1,2,10), edge(2,3,15)]); assert.equal(r.reachable,true); assert.equal(r.totalDistanceMeters,25); assert.deepEqual(r.steps.map(s=>s.venueId),[1,2,3]); });
+test('step-free requests exclude inaccessible connections', () => { const r = route([edge(1,2,10,false),edge(2,3,15)], {accessibleOnly:true}); assert.equal(r.reachable,false); });
+test('closed intermediate places cannot serve as connectors', () => { const r = route([edge(1,2,10),edge(2,3,15)],{ venues: venues.map(v=>({...v, operationalStatus:v.id===2?'CLOSED':'OPEN'})) }); assert.equal(r.reachable,false); });
+test('inaccessible nodes cannot serve a step-free route', () => { const r=route([edge(1,2,10),edge(2,3,15)],{accessibleOnly:true, venues:venues.map(v=>({...v,accessible:v.id!==2}))}); assert.equal(r.reachable,false); });
+test('an existing origin and destination at the same place is zero distance', () => {const r=route([],{toVenueId:1});assert.equal(r.reachable,true);assert.equal(r.totalDistanceMeters,0);assert.equal(r.steps.length,1);});
+test('missing destinations cannot produce routes', () => {assert.equal(route([],{toVenueId:999}).reachable,false);});

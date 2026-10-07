@@ -1,0 +1,6 @@
+{
+  "name": "Auvresence — Technovate 2026",
+  "description": "AI-Powered Event Intelligence & Management Ecosystem connecting organiser operations, participant experience, venue intelligence, and verifiable credentials.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
