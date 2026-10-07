@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-vercel-backend.mjs",
     "start": "NODE_ENV=production tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
@@ -18,7 +18,7 @@
     "test:schema-recovery": "node scripts/test-schema-recovery.mjs",
     "test:security": "node scripts/security-smoke.mjs",
     "test:restart": "node scripts/test-restart-persistence.mjs",
-    "test:vercel-adapter": "node --import tsx scripts/test-vercel-adapter.mjs"
+    "test:vercel-adapter": "node scripts/build-vercel-backend.mjs && node --import tsx scripts/test-vercel-adapter.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

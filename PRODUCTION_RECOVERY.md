@@ -11,6 +11,7 @@ The deployed frontend returned HTTP 200. `/api/health`, `/api/me` and `/api/even
 - `api/index.ts` exports the existing Express backend; `server.ts` retains standalone local startup and skips listening inside Vercel.
 - `vercel.json` preserves the Vite frontend build and explicitly routes API requests to the Node function, with frontend navigation fallback.
 - `api/tsconfig.json` avoids importing frontend ambient types into Vercel's isolated transpilation.
+- `scripts/build-vercel-backend.mjs` bundles the existing backend/dependencies into CommonJS for Vercel's loader. The first real function deployment failed with `ERR_REQUIRE_ESM` in `jwks-rsa` loading `jose`; runtime logs established this failure. Firebase Admin and cryptographic dependency versions are unchanged.
 - `src/lib/firebase-admin.ts` adds the JSON import attribute required by plain Node 24. The compiled function originally failed with `ERR_IMPORT_ATTRIBUTE_MISSING`; this is now repaired.
 - Unknown API paths return JSON 404 instead of falling through to an HTML SPA.
 - `.vercelignore` excludes local environment files and database data; `.gitignore` excludes local Vercel credentials/output.

@@ -9,4 +9,5 @@ coverage/
 
 .local/
 .vercel/
+.vercel-backend/
 .vercel
