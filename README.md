@@ -1,5 +1,7 @@
 # Auvresence
 
+Production recovery on Vercel is documented in [PRODUCTION_RECOVERY.md](PRODUCTION_RECOVERY.md).
+
 An event operating system: one identity, participant journeys, and Organiser Studio. React/Vite and Express use Firebase authentication and PostgreSQL through Drizzle. Venue routing uses the persisted venue graph; disconnected places never receive invented directions.
 
 ## Requirements
@@ -65,3 +67,11 @@ The additional normal-journey test uses database-only non-demo accounts and chec
 The smoke test creates a BANANA FESTIVAL fixture, checks isolation and persistence, then makes it private so it does not remain in public discovery. It uses signed showcase identities, not Firebase test bypasses. See `RELEASE_REPORT.md` for the tested scope and limitations.
 
 Settings, session creation/editing, application review, credential status, venues, and announcements use persisted server operations. Email automations are an editable prototype and send no emails; voice/vision remain unavailable. Tests use local data only. Browser QA used explicit fixture identities, not real Google authentication. See RELEASE_REPORT.md for the readiness verdict.
+
+## Vercel deployment
+
+Keep the Vite preset. `vercel.json` builds `dist`, sends `/api/*` to `api/index.ts`, and preserves SPA navigation. The function exports the existing Express backend without starting a listening server; local `npm run dev`/`npm start` keep their existing behavior. Firebase Admin's server JSON import supports plain Node 24.
+
+Configure `DATABASE_URL` and `UNOROUTER_API_KEY` securely in the **auvresencebeta** project's **Production** environment, without a `VITE_` prefix. Use `AI_PROVIDER=unorouter`, `AI_MODEL=gpt-oss-20b:free`, and keep `SHOWCASE_MODE`, `ENABLE_DEMO_IDENTITIES`, `SHOWCASE_DEBUG` false. Environment changes require a new deployment. Never upload local `.env` or `.local` database files; `.vercelignore` excludes them.
+
+Check deployed `/api/health` for JSON and HTTP 200/databaseReady/schemaReady. Unauthenticated `/api/me` should return JSON 401, not a static 404 or HTML. Use the real production database when reviewing/applying `npm run db:push`; local schema checks do not verify production. `npm run test:vercel-adapter` verifies the exported backend against the configured local database without bypassing authentication; it does not establish deployed readiness.

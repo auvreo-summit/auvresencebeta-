@@ -2155,6 +2155,11 @@ app.post(
 // VITE DEV SERVER / STATIC ASSET SERVING
 // ============================================================================
 
+// API misses must not fall through to the frontend's SPA document.
+app.use('/api', (_req, res) => {
+  res.status(404).json({ code: 'NOT_FOUND', error: 'API route not found.' });
+});
+
 app.use((error: any, _req: Request, res: Response, _next: express.NextFunction) => {
   if (error?.type === 'entity.too.large') return res.status(413).json({ code: 'VALIDATION_ERROR', error: 'Request is too large.' });
   if (error instanceof SyntaxError) return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'Request body must be valid JSON.' });
@@ -2185,4 +2190,7 @@ async function startServer() {
   });
 }
 
-startServer();
+// Vercel invokes the exported handler; local development/production retain
+// their existing standalone server and Vite/static middleware.
+export default app;
+if (process.env.VERCEL !== '1') startServer();

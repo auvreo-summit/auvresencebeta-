@@ -17,7 +17,8 @@
     "test:normal-journey": "node --import tsx scripts/test-normal-journey.ts",
     "test:schema-recovery": "node scripts/test-schema-recovery.mjs",
     "test:security": "node scripts/security-smoke.mjs",
-    "test:restart": "node scripts/test-restart-persistence.mjs"
+    "test:restart": "node scripts/test-restart-persistence.mjs",
+    "test:vercel-adapter": "node --import tsx scripts/test-vercel-adapter.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
