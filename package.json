@@ -15,7 +15,9 @@
     "db:push": "drizzle-kit push --config src/db/drizzle.config.ts",
     "db:local": "node scripts/local-db.mjs",
     "test:normal-journey": "node --import tsx scripts/test-normal-journey.ts",
-    "test:schema-recovery": "node scripts/test-schema-recovery.mjs"
+    "test:schema-recovery": "node scripts/test-schema-recovery.mjs",
+    "test:security": "node scripts/security-smoke.mjs",
+    "test:restart": "node scripts/test-restart-persistence.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

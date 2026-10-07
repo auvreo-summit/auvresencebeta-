@@ -30,8 +30,18 @@ export const RECOGNISED_DEMO_UIDS = new Set([
 ]);
 
 export function isShowcaseModeEnabled(): boolean {
-  const raw = process.env.SHOWCASE_MODE ?? 'true';
+  const raw = process.env.SHOWCASE_MODE ?? 'false';
   return raw.trim().toLowerCase() === 'true';
+}
+
+// Synthetic identities are an explicit development/test facility, not a
+// consequence of enabling the clean judge-facing showcase presentation.
+export function areDemoIdentitiesEnabled(): boolean {
+  return isShowcaseModeEnabled() && process.env.ENABLE_DEMO_IDENTITIES === 'true';
+}
+
+export function areDebugToolsEnabled(): boolean {
+  return areDemoIdentitiesEnabled() && process.env.SHOWCASE_DEBUG === 'true';
 }
 
 // Runtime server-only HMAC secret for showcase session tokens
@@ -57,7 +67,7 @@ export function verifyShowcaseToken(token: string): {
   name: string;
   exp: number;
 } | null {
-  if (!isShowcaseModeEnabled()) return null;
+  if (!areDemoIdentitiesEnabled()) return null;
   if (!token.startsWith('auv_sig_')) return null;
   const raw = token.slice('auv_sig_'.length);
   const parts = raw.split('.');
@@ -88,10 +98,12 @@ export const requireAuth = async (
   res: Response,
   next: NextFunction
 ) => {
+  if (req.user && req.dbUser) return next();
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       error: 'Unauthorized: Missing Bearer authentication token.',
+      code: 'AUTHENTICATION_FAILED',
       layer: 'LAYER_1_IDENTITY',
     });
   }
@@ -100,6 +112,7 @@ export const requireAuth = async (
   if (!token) {
     return res.status(401).json({
       error: 'Unauthorized: Empty authentication token.',
+      code: 'AUTHENTICATION_FAILED',
       layer: 'LAYER_1_IDENTITY',
     });
   }
@@ -107,7 +120,7 @@ export const requireAuth = async (
   try {
     // 1. Check if token is a server-signed showcase session token (only allowed when SHOWCASE_MODE=true)
     if (token.startsWith('auv_sig_')) {
-      if (!isShowcaseModeEnabled()) {
+      if (!areDemoIdentitiesEnabled()) {
         return res.status(403).json({
           error: 'Showcase demo sessions are disabled in this environment.',
           layer: 'LAYER_1_IDENTITY',
@@ -165,7 +178,13 @@ export const requireAuth = async (
     console.error('Error verifying authentication token:', error);
     return res.status(401).json({
       error: 'Unauthorized: Invalid or unverified identity token.',
+      code: 'AUTHENTICATION_FAILED',
       layer: 'LAYER_1_IDENTITY',
     });
   }
+};
+
+export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.headers.authorization) return next();
+  return requireAuth(req, res, next);
 };

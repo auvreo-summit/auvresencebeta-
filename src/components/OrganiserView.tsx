@@ -1,3 +1,5 @@
+import { SessionComposer, StudioSettings, AutomationsPrototype } from './StudioTools.tsx';
+import { useDialogFocus } from '../hooks/useDialogFocus.ts';
 import { PoiIcon } from './PoiIcon.tsx';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -17,6 +19,8 @@ import type {
 import type { ActionArchitectureTrace } from './ActionXRayModal.tsx';
 
 export type OrganiserTab =
+  | 'SETTINGS'
+  | 'AUTOMATIONS'
   | 'CREDENTIALS'
   | 'OVERVIEW'
   | 'APPLICATIONS'
@@ -108,10 +112,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
   >('ALL');
   const [updatingAppId, setUpdatingAppId] = useState<number | null>(null);
 
+  const appSheetRef = useDialogFocus(Boolean(selectedAppId && context?.isOrganiser), () => setSelectedAppId(null));
+
   // Session Side Sheet state
   const [selectedSession, setSelectedSession] = useState<EventSession | null>(
     null
   );
+  const sessionSheetRef = useDialogFocus<HTMLFormElement>(Boolean(selectedSession && context?.isOrganiser), () => setSelectedSession(null));
   const [targetVenueId, setTargetVenueId] = useState<number | null>(null);
   const [targetStartTime, setTargetStartTime] = useState<string>('');
   const [targetEndTime, setTargetEndTime] = useState<string>('');
@@ -133,7 +140,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
   >('ALL_APPLICANTS');
   const [publishingAnn, setPublishingAnn] = useState(false);
 
-  // Venue Studio & Walk-to-Map state
+  // Venue Studio & Draw-to-Map state
   const [studioFloorName, setStudioFloorName] = useState<string>('');
   const [isRecordingPath, setIsRecordingPath] = useState<boolean>(false);
   const [recordedPoints, setRecordedPoints] = useState<
@@ -215,6 +222,18 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
     setTargetStartTime(s.startTime);
     setTargetEndTime(s.endTime);
     setTargetStatus(s.status);
+  };
+
+  const [updatingCredential, setUpdatingCredential] = useState<number | null>(null);
+  const handleCredentialStatus = async (id: number, status: 'ACTIVE' | 'REVOKED') => {
+    if (!authToken || updatingCredential) return;
+    setUpdatingCredential(id); setErrorBanner(null);
+    try {
+      const response = await fetch(`/api/organiser/credentials/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` }, body: JSON.stringify({ status }) });
+      const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Credential could not be updated.');
+      await Promise.all([fetchDashboard(), onRefreshContext()]);
+      setStatusNotice({ title: status === 'ACTIVE' ? 'Credential reactivated' : 'Credential revoked' });
+    } catch (error: any) { setErrorBanner(error.message); } finally { setUpdatingCredential(null); }
   };
 
   // Review Application (Accept / Reject)
@@ -307,8 +326,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
     const oldVenueName = selectedSession.venueName;
     const newVenue = context.venues.find((v) => v.id === targetVenueId);
     const newVenueName = newVenue?.name || oldVenueName || 'No destination';
-    if (!targetVenueId || !targetStartTime || !targetEndTime) {
-      setErrorBanner('Choose a destination and set start and end times first.');
+    if (!targetStartTime || !targetEndTime || targetEndTime <= targetStartTime) {
+      setErrorBanner('Set a valid start and end time first.');
       return;
     }
 
@@ -415,8 +434,9 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           }),
         }
       );
+      const result = await res.json();
       if (!res.ok) {
-        throw new Error('Could not publish update.');
+        throw new Error(result.error || 'Could not publish update.');
       }
 
       const publishedTitle = annTitle;
@@ -437,7 +457,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
     }
   };
 
-  // Save Walk-to-Map recorded corridor path
+  // Save Draw-to-Map recorded corridor path
   const handleSaveFloorPath = async () => {
     if (!authToken || !context) return;
     const floorObj = (context.floors || []).find(
@@ -467,7 +487,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           }),
         }
       );
-      if (!res.ok) throw new Error('Could not save floor corridor path.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not save floor corridor path.');
       await onRefreshContext();
       setIsRecordingPath(false);
       setStatusNotice({
@@ -510,7 +531,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         },
         body: JSON.stringify({ name, levelOrder: nextOrder }),
       });
-      if (!res.ok) throw new Error('Could not add the floor.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not add the floor.');
       await onRefreshContext();
       setStudioFloorName(name);
       setRecordedPoints([]);
@@ -555,7 +577,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           mapY: newPoiY,
         }),
       });
-      if (!res.ok) throw new Error('Could not add venue location.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not add venue location.');
       const createdName = newPoiName.trim();
       setNewPoiName('');
       setNewPoiDesc('');
@@ -601,7 +624,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           }),
         }
       );
-      if (!res.ok) throw new Error('Could not update venue status.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not update venue status.');
       await onRefreshContext();
       setStatusNotice({
         title: 'LOCATION STATUS UPDATED',
@@ -637,7 +661,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           isCrossFloor: isCross,
         }),
       });
-      if (!res.ok) throw new Error('Could not connect locations.');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Could not connect locations.');
       await onRefreshContext();
       setStatusNotice({
         title: 'PATHWAY CONNECTED',
@@ -733,6 +758,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             { id: 'CREDENTIALS', label: 'Credentials' },
             { id: 'LIVE', label: 'Live' },
             { id: 'ANNOUNCEMENTS', label: 'Announcements' },
+            { id: 'SETTINGS', label: 'Settings' },
+            { id: 'AUTOMATIONS', label: 'Automations · Prototype' },
           ].map((t) => (
             <button
               key={t.id}
@@ -1071,7 +1098,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                           }`}
                         >
                           <td className="py-4 pr-4 font-medium text-[#faf6f0]">
-                            {app.applicantName}
+                            <button type="button" className="text-left min-h-11 focus-visible:underline" onClick={() => setSelectedAppId(app.id)}>{app.applicantName}</button>
                           </td>
                           <td className="py-4 px-4 text-[#faf6f0]/80">
                             {app.category}
@@ -1148,6 +1175,9 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         </div>
       )}
 
+      {activeTab === 'SETTINGS' && context && <StudioSettings key={context.event.id} context={context} token={authToken} onSaved={onRefreshContext} />}
+      {activeTab === 'AUTOMATIONS' && <AutomationsPrototype />}
+
       {/* =================================================================== */}
       {/* TAB 03: SCHEDULE TIMELINE                                           */}
       {/* =================================================================== */}
@@ -1165,6 +1195,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
 </div>
 
+          {context && <SessionComposer context={context} token={authToken} onSaved={onRefreshContext} />}
+          {!context?.sessions.length && <p className="text-sm text-[#faf6f0]/60">No sessions yet. Add the first programme moment.</p>}
           <div className="border-t border-[#cf9f5d]/20 divide-y divide-[#cf9f5d]/15">
             {context?.sessions.map((s) => (
               <button
@@ -1295,7 +1327,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               (context?.floors || []).length === 0 ? 'hidden' : ''
             }`}
           >
-            {/* Left 7 Columns: Walk-to-Map Interactive Floor Canvas & POI Directory */}
+            {/* Left 7 Columns: Draw-to-Map Interactive Floor Canvas & POI Directory */}
             <div className="lg:col-span-7 space-y-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-0.5">
@@ -1304,7 +1336,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   </span>
                   <p className="text-xs text-[#faf6f0]/60">
                     {isRecordingPath
-                      ? 'Click along the floor canvas to trace a Walk-to-Map corridor path.'
+                      ? 'Click to sketch a corridor. This is not GPS tracking; canvas distances are estimates.'
                       : 'Click anywhere on the floor canvas to set coordinates for a new location.'}
                   </p>
                 </div>
@@ -1322,7 +1354,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       }}
                       className="px-4 py-2 text-xs font-mono border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] cursor-pointer"
                     >
-                      Walk-to-Map Path
+                      Draw-to-Map Path
                     </button>
                   ) : (
                     <>
@@ -1397,7 +1429,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     strokeWidth="0.25"
                   />
 
-                  {/* Walk-to-Map Path */}
+                  {/* Draw-to-Map Path */}
                   {(isRecordingPath
                     ? recordedPoints
                     : (context?.floors || []).find(
@@ -1749,7 +1781,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 </>
               ) : (
                 <p className="text-lg font-display text-[#faf6f0]/60">
-                  All sessions complete
+                  No upcoming session is marked
                 </p>
               )}
             </div>
@@ -1770,7 +1802,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 </>
               ) : (
                 <p className="text-sm text-[#faf6f0]/60">
-                  Operations running on schedule.
+                  No updates published yet.
                 </p>
               )}
             </div>
@@ -1814,7 +1846,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         <section>
           <p className="text-xs font-mono tracking-[.2em] text-[#cf9f5d]">CREDENTIALS</p>
           <h2 className="font-display text-4xl mt-4 mb-8">Identity, issued.</h2>
-          {(dashboard?.applications || []).some(app => app.credential) ? <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">{dashboard?.applications.filter(app => app.credential).map(app => <li key={app.id} className="py-5 flex flex-wrap justify-between items-center gap-4"><div><p className="text-base">{app.applicantName}</p><p className="text-xs text-[#faf6f0]/60 mt-2">{app.credential!.participantCode} · {app.credential!.roleCategory}</p></div><div className="flex items-center gap-5"><span className="text-xs font-mono text-[#edd2ab]">{app.credential!.status}</span><button type="button" className="auv-btn auv-btn-text" onClick={() => onOpenVerificationPreview(app.credential!.verificationToken)}>Verify <ExternalLink className="h-3.5 w-3.5" /></button></div></li>)}</ul> : <p className="text-[#edd2ab]">Accept an application to issue the first event pass.</p>}
+          {(dashboard?.applications || []).some(app => app.credential) ? <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">{dashboard?.applications.filter(app => app.credential).map(app => <li key={app.id} className="py-5 flex flex-wrap justify-between items-center gap-4"><div><p className="text-base">{app.applicantName}</p><p className="text-xs text-[#faf6f0]/60 mt-2">{app.credential!.participantCode} · {app.credential!.roleCategory}</p></div><div className="flex items-center gap-5"><span className="text-xs font-mono text-[#edd2ab]">{app.credential!.status}</span><button type="button" className="auv-btn auv-btn-text" disabled={updatingCredential !== null || (app.credential!.status !== 'ACTIVE' && app.status !== 'ACCEPTED')} onClick={() => handleCredentialStatus(app.credential!.id, app.credential!.status === 'ACTIVE' ? 'REVOKED' : 'ACTIVE')}>{updatingCredential === app.credential!.id ? 'Saving…' : app.credential!.status === 'ACTIVE' ? 'Revoke' : 'Reactivate'}</button><button type="button" className="auv-btn auv-btn-text" onClick={() => onOpenVerificationPreview(app.credential!.verificationToken)}>Verify <ExternalLink className="h-3.5 w-3.5" /></button></div></li>)}</ul> : <p className="text-[#edd2ab]">Accept an application to issue the first event pass.</p>}
         </section>
       )}
       {activeTab === 'PARTICIPANTS' && (
@@ -2000,8 +2032,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
       {/* APPLICATION SIDE SHEET                                              */}
       {/* =================================================================== */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between p-8 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs" onMouseDown={e => { if (e.target === e.currentTarget) setSelectedAppId(null); }}>
+          <div ref={appSheetRef} role="dialog" aria-modal="true" aria-label="Review application" tabIndex={-1} className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between p-8 overflow-y-auto">
             <div className="space-y-8">
               <div className="flex items-start justify-between gap-4 border-b border-[#cf9f5d]/20 pb-5">
                 <div className="space-y-1">
@@ -2125,8 +2157,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
       {/* SESSION SIDE SHEET (CHANGE LOCATION / SCHEDULE)                     */}
       {/* =================================================================== */}
       {selectedSession && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs">
-          <form
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs" onMouseDown={e => { if (e.target === e.currentTarget) setSelectedSession(null); }}>
+          <form ref={sessionSheetRef} role="dialog" aria-modal="true" aria-label="Edit session" tabIndex={-1}
             onSubmit={handleSaveSessionSheet}
             className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between p-8 overflow-y-auto"
           >
@@ -2169,6 +2201,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   <p className="text-sm text-[#faf6f0]/60">No venue yet.</p>
                 )}
                 <div className="grid grid-cols-2 gap-2.5">
+                  <button type="button" className="p-4 text-left border border-[#cf9f5d]/30 text-[#edd2ab]" onClick={() => setTargetVenueId(null)}>Not assigned yet</button>
                   {context?.venues.map((v) => {
                     const isSelected = targetVenueId === v.id;
                     return (
@@ -2201,7 +2234,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     START TIME
                   </label>
                   <input
-                    type="text"
+                    type="time"
+                    aria-label="Session start time"
                     value={targetStartTime}
                     onChange={(e) => setTargetStartTime(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] tabular-nums"
@@ -2212,7 +2246,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     END TIME
                   </label>
                   <input
-                    type="text"
+                    type="time"
+                    aria-label="Session end time"
                     value={targetEndTime}
                     onChange={(e) => setTargetEndTime(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] tabular-nums"
@@ -2226,7 +2261,6 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 type="submit"
                 disabled={
                   updatingSession ||
-                  !targetVenueId ||
                   !targetStartTime ||
                   !targetEndTime
                 }

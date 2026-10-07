@@ -11,18 +11,19 @@ import {
   type TextAiProvider,
 } from './ai-provider.ts';
 
-const REQUEST_TIMEOUT_MS = 14000;
+const REQUEST_TIMEOUT_MS = Math.max(100, Math.min(15000, Number(process.env.AI_TIMEOUT_MS) || 14000));
 
 export class UnoRouterTextProvider implements TextAiProvider {
+  constructor(private providerOverride?: string, private modelOverride?: string) {}
   private getConfig() {
-    const provider = process.env.AI_PROVIDER?.trim().toLowerCase();
+    const provider = this.providerOverride || (process.env.AI_PROVIDER || 'unorouter').trim().toLowerCase();
     const baseUrl = (
       process.env.UNOROUTER_BASE_URL || 'https://api.unorouter.com/v1'
     )
       .trim()
       .replace(/\/+$/, '');
     const apiKey = process.env.UNOROUTER_API_KEY?.trim();
-    const model = process.env.AI_MODEL?.trim();
+    const model = this.modelOverride || (process.env.AI_MODEL || 'gpt-oss-20b:free').trim();
     const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || undefined;
 
     if (

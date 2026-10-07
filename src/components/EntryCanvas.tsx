@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUp, ArrowRight, Plus } from 'lucide-react';
+import type { PlatformAction, ConversationTurn } from '../lib/conversation.ts';
 import type { UserJourneysData, UserProfile } from '../types.ts';
 import { ProfileMenu } from './ProfileMenu.tsx';
 
@@ -16,6 +17,8 @@ import { ProfileMenu } from './ProfileMenu.tsx';
 
 interface EntryCanvasProps {
   user: UserProfile | null;
+  getToken: () => Promise<string | null>;
+  aiConfigured?: boolean;
   photoURL?: string | null;
   journeys: UserJourneysData | null;
   journeysLoading: boolean;
@@ -31,87 +34,6 @@ interface EntryCanvasProps {
   onRetryJourneys: () => void;
 }
 
-type Reply =
-  | { kind: 'ORGANISE'; text: string; prefill?: string }
-  | { kind: 'EXPLORE'; text: string }
-  | { kind: 'JOURNEYS'; text: string }
-  | { kind: 'SIGN_IN_FOR_JOURNEYS'; text: string }
-  | { kind: 'UNSURE'; text: string };
-
-const has = (s: string, words: string[]) => words.some((w) => s.includes(w));
-
-function interpret(raw: string, signedIn: boolean): Reply {
-  const text = raw.trim();
-  const lower = text.toLowerCase();
-
-  if (
-    has(lower, [
-      'organis',
-      'organiz',
-      'create an event',
-      'create event',
-      'host ',
-      'hosting',
-      'run an event',
-      'run a ',
-      'plan an event',
-      'plan a ',
-      'build an event',
-      'new event',
-      'set up an event',
-      'start an event',
-    ])
-  ) {
-    return {
-      kind: 'ORGANISE',
-      text: 'Let’s build it.',
-      prefill: text.length >= 10 ? text : undefined,
-    };
-  }
-
-  if (
-    has(lower, [
-      'my event',
-      'my journey',
-      'my application',
-      'my credential',
-      'my ticket',
-      'continue',
-      'where do i go',
-      'what’s next',
-      "what's next",
-    ])
-  ) {
-    return signedIn
-      ? { kind: 'JOURNEYS', text: 'Here is where you are.' }
-      : {
-          kind: 'SIGN_IN_FOR_JOURNEYS',
-          text: 'Sign in and I will pick up where you left off.',
-        };
-  }
-
-  if (
-    has(lower, [
-      'explore',
-      'find',
-      'discover',
-      'join',
-      'attend',
-      'browse',
-      'events near',
-      'events',
-      'looking for',
-    ])
-  ) {
-    return { kind: 'EXPLORE', text: 'Here is what is open right now.' };
-  }
-
-  return {
-    kind: 'UNSURE',
-    text: 'I can take you to events, or help you organise one. Where would you like to start?',
-  };
-}
-
 const greeting = (name?: string) => {
   const h = new Date().getHours();
   const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
@@ -120,6 +42,8 @@ const greeting = (name?: string) => {
 
 export const EntryCanvas: React.FC<EntryCanvasProps> = ({
   user,
+  getToken,
+  aiConfigured,
   photoURL,
   journeys,
   journeysLoading,
@@ -135,15 +59,41 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
   onRetryJourneys,
 }) => {
   const [value, setValue] = useState('');
-  const [reply, setReply] = useState<Reply | null>(null);
+  const [messages, setMessages] = useState<Array<{ question: string; answer?: string; error?: string; actions?: PlatformAction[] }>>([]);
+  const [asking, setAsking] = useState(false);
   const signedIn = Boolean(user);
+  const generation = useRef(0);
+  useEffect(() => { generation.current++; setMessages([]); setAsking(false); }, [user?.id]);
 
-  const submit = (e: React.FormEvent) => {
+  const openAction = (action: PlatformAction) => {
+    if (action.type === 'EXPLORE_EVENTS') return onExplore();
+    if (action.type === 'CREATE_EVENT') return signedIn ? onOrganise() : onSignIn('ORGANISE');
+    if (action.type === 'OPEN_STUDIO' && action.eventId) return onOpenOrganising(action.eventId);
+    if (action.eventId) return onOpenParticipating(action.eventId);
+  };
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value.trim()) return;
-    const result = interpret(value, signedIn);
-    setReply(result);
-    if (result.kind === 'JOURNEYS') requestAnimationFrame(() => document.getElementById('your-journeys')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }));
+    const question = value.trim();
+    if (!question || asking) return;
+    const requestGeneration = generation.current;
+    setAsking(true);
+    setValue('');
+    const history: ConversationTurn[] = messages.flatMap(m => m.answer ? [{ role: 'user' as const, content: m.question }, { role: 'assistant' as const, content: m.answer.slice(0, 1500) }] : []).slice(-6);
+    try {
+      const token = await getToken();
+      const response = await fetch('/api/ai/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ question, history }),
+        signal: AbortSignal.timeout(45000),
+      });
+      const body = await response.json();
+      if (requestGeneration !== generation.current) return;
+      setMessages(previous => [...previous, response.ok ? { question, answer: body.answer, actions: body.actions } : { question, error: body.error || 'Auvresence intelligence is temporarily unavailable. Your tools remain accessible.' }]);
+    } catch {
+      if (requestGeneration !== generation.current) return;
+      setMessages(previous => [...previous, { question, error: 'Auvresence intelligence is temporarily unavailable. Your tools remain accessible.' }]);
+    } finally { if (requestGeneration === generation.current) setAsking(false); }
   };
 
   const hello = greeting(user?.displayName);
@@ -190,7 +140,7 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
           <ProfileMenu
             user={user}
             photoURL={photoURL}
-            onGoHome={() => setReply(null)}
+            onGoHome={() => setMessages([])}
             onSignOut={onSignOut}
           />
         ) : (
@@ -245,12 +195,14 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
               onChange={(e) => setValue(e.target.value)}
               placeholder="Ask Auvresence…"
               autoComplete="off"
+              maxLength={500}
               className="min-w-0 flex-1 bg-transparent py-3 text-base sm:text-lg text-[#faf6f0] placeholder:text-[#faf6f0]/60 outline-none"
             />
             <button
               type="submit"
               aria-label="Send"
-              disabled={!value.trim()}
+              aria-busy={asking}
+              disabled={asking || !value.trim()}
               className="flex shrink-0 h-11 w-11 items-center justify-center bg-[#cf9f5d] text-[#0d0608] transition-colors hover:bg-[#edd2ab] disabled:bg-[#4e0a17] disabled:text-[#faf6f0]/30 cursor-pointer"
             >
               <ArrowUp className="h-5 w-5" />
@@ -258,75 +210,17 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
           </div>
         </form>
 
+        {aiConfigured === false && <p className="mt-4 text-xs text-[#faf6f0]/55 text-center">Event information and navigation are available. Free-form intelligence is currently unavailable.</p>}
+
         {/* The response happens here, in the canvas — never in a drawer */}
-        {reply && (
-          <div
-            data-testid="canvas-reply"
-            className="auv-rise mt-10 w-full text-center"
-            role="status"
-          >
-            <p className="font-display italic text-3xl text-[#edd2ab]">
-              {reply.text}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-              {reply.kind === 'ORGANISE' && (
-                <button
-                  type="button"
-                  data-testid="reply-start-creating"
-                  onClick={() => {
-                    if (!signedIn) {
-                      onSignIn('ORGANISE');
-                      return;
-                    }
-                    onOrganise({ description: reply.prefill });
-                  }}
-                  className="inline-flex items-center gap-2 bg-[#cf9f5d] px-6 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-[#0d0608] hover:bg-[#edd2ab] cursor-pointer"
-                >
-                  {signedIn ? 'Start creating event' : 'Sign in to start'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-              {reply.kind === 'EXPLORE' && (
-                <button
-                  type="button"
-                  onClick={onExplore}
-                  className="inline-flex items-center gap-2 bg-[#cf9f5d] px-6 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-[#0d0608] hover:bg-[#edd2ab] cursor-pointer"
-                >
-                  See open events <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-              {reply.kind === 'SIGN_IN_FOR_JOURNEYS' && (
-                <button
-                  type="button"
-                  onClick={() => onSignIn()}
-                  className="inline-flex items-center gap-2 bg-[#cf9f5d] px-6 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-[#0d0608] hover:bg-[#edd2ab] cursor-pointer"
-                >
-                  Sign in <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-              {reply.kind === 'UNSURE' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={onExplore}
-                    className="border border-[#cf9f5d]/50 px-5 py-3 text-xs tracking-[0.2em] uppercase text-[#edd2ab] hover:bg-[#24040a] cursor-pointer"
-                  >
-                    Explore events
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      signedIn ? onOrganise() : onSignIn('ORGANISE')
-                    }
-                    className="border border-[#cf9f5d]/50 px-5 py-3 text-xs tracking-[0.2em] uppercase text-[#edd2ab] hover:bg-[#24040a] cursor-pointer"
-                  >
-                    Organise an event
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        <div data-testid="canvas-reply" aria-live="polite" className="w-full">
+          {asking && <p role="status" className="mt-8 font-display italic text-xl text-[#edd2ab]">Auvresence is thinking…</p>}
+          {messages.map((message, index) => <div key={index} className="auv-rise mt-8 w-full border-t border-[#cf9f5d]/20 pt-6">
+            <p className="text-sm text-[#faf6f0]/60 break-words">{message.question}</p>
+            <p role={message.error ? 'alert' : undefined} className="mt-4 font-display text-xl sm:text-2xl text-[#edd2ab] whitespace-pre-wrap break-words">{message.answer || message.error}</p>
+            {!!message.actions?.length && <div className="mt-6 flex flex-wrap gap-3">{message.actions.map((action, i) => <button key={i} type="button" data-testid={action.type === 'CREATE_EVENT' ? 'reply-start-creating' : undefined} onClick={() => openAction(action)} className="inline-flex items-center gap-2 border border-[#cf9f5d]/50 px-5 py-3 text-xs text-[#edd2ab] hover:bg-[#24040a] cursor-pointer">{action.label}<ArrowRight className="h-4 w-4" /></button>)}</div>}
+          </div>)}
+        </div>
 
         {/* Deterministic doors — always present, never behind the AI */}
         <div className="auv-rise-3 mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">

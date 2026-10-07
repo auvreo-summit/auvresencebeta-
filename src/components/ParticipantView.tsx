@@ -93,6 +93,8 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
   const [institution, setInstitution] = useState('');
   // Empty = "use the first organiser-defined category, or plain Participant".
   const [category, setCategory] = useState('');
+  const [phone, setPhone] = useState('');
+  const [customAnswer, setCustomAnswer] = useState('');
   const [statement, setStatement] = useState('');
   const [submittingApp, setSubmittingApp] = useState(false);
   const [appMessage, setAppMessage] = useState<{
@@ -198,6 +200,8 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
           category:
             category || context.event.categories[0] || 'Participant',
           statement,
+          phone: phone || undefined,
+          customAnswer: customAnswer || undefined,
         }),
       });
 
@@ -487,7 +491,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                 </div>
               ) : (
                 <p className="text-lg font-display text-[#faf6f0]/60">
-                  All scheduled sessions complete.
+                  No upcoming session is marked.
                 </p>
               )}
             </div>
@@ -559,7 +563,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
               ) : (
                 <div className="space-y-2 max-w-2xl">
                   <p className="text-xl sm:text-2xl font-display text-[#faf6f0] leading-relaxed">
-                    You&apos;re on schedule.{' '}
+                    On your programme.{' '}
                     {upNext
                       ? `Your next moment begins at ${upNext.startTime}${upNext.venueName ? ` in ${upNext.venueName}` : ' · location to be announced'}.`
                       : 'Explore your day below.'}{' '}
@@ -652,9 +656,10 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                     handleSelectSubTab('DISCOVERY');
                     setShowApplyForm(true);
                   }}
+                  disabled={context.event.applicationStatus !== 'OPEN'}
                   className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
                 >
-                  Apply Now
+                  {context.event.applicationStatus === 'OPEN' ? 'Apply Now' : 'Applications ' + (context.event.applicationStatus || 'OPEN').toLowerCase().replace('_', ' ')}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </>
@@ -891,6 +896,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                     handleSelectSubTab('DISCOVERY');
                     setShowApplyForm(true);
                   }}
+                  disabled={context.event.applicationStatus !== 'OPEN'}
                   className="px-6 py-3 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer"
                 >
                   Apply to Event
@@ -987,7 +993,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                   onClick={() => setShowApplyForm(true)}
                   className="px-7 py-3.5 text-xs font-semibold tracking-widest bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2.5 cursor-pointer whitespace-nowrap"
                 >
-                  APPLY
+                  {context.event.applicationStatus === 'OPEN' ? 'APPLY' : context.event.applicationStatus === 'CLOSED' ? 'APPLICATIONS CLOSED' : 'APPLICATIONS COMING SOON'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
@@ -1001,7 +1007,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
           )}
 
           {/* Application Form */}
-          {(!myApp || showApplyForm) && !myApp && (
+          {showApplyForm && !myApp && context.event.applicationStatus === 'OPEN' && (
             <section className="pt-10 border-t border-[#cf9f5d]/20 max-w-2xl space-y-6">
               <div className="space-y-1">
                 <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
@@ -1020,6 +1026,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                     </label>
                     <input
                       type="text"
+                      aria-label="Full Name"
                       required
                       value={applicantName}
                       onChange={(e) => setApplicantName(e.target.value)}
@@ -1033,6 +1040,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                     <input
                       type="text"
                       required
+                      aria-label="Institution / Organisation"
                       value={institution}
                       onChange={(e) => setInstitution(e.target.value)}
                       className="w-full px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0] focus:outline-none focus:border-[#cf9f5d]"
@@ -1059,6 +1067,8 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                 </div>
                 )}
 
+                {context.event.applicationConfig?.requirePhone && <label className="block text-xs text-[#edd2ab]">Phone number<input aria-label="Phone number" type="tel" required maxLength={40} value={phone} onChange={e => setPhone(e.target.value)} className="w-full mt-2 px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35" /></label>}
+                {context.event.applicationConfig?.customQuestionLabel && <label className="block text-xs text-[#edd2ab]">{context.event.applicationConfig.customQuestionLabel}<textarea aria-label="Event question" required={context.event.applicationConfig.customQuestionRequired} maxLength={1000} value={customAnswer} onChange={e => setCustomAnswer(e.target.value)} className="w-full mt-2 px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35" /></label>}
                 <div className="space-y-1.5">
                   <label className="block text-xs text-[#edd2ab]">
                     Why would you like to take part? (min. 15 characters)
@@ -1066,6 +1076,8 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                   <textarea
                     rows={3}
                     required
+                    minLength={15}
+                    aria-label="Why would you like to take part?"
                     value={statement}
                     onChange={(e) => setStatement(e.target.value)}
                     className="w-full px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0] focus:outline-none focus:border-[#cf9f5d]"

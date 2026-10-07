@@ -1,7 +1,9 @@
 import 'dotenv/config';
-import { databaseFailure } from './src/db/errors.ts';
+import { operationFailure, databaseFailure } from './src/db/errors.ts';
 import { answerEventQuestion } from './src/lib/event-answers.ts';
 import express from 'express';
+import { createRateLimiter } from './src/middleware/rate-limit.ts';
+import { AUVRESENCE_INSTRUCTIONS, conversationPrompt, type PlatformAction } from './src/lib/conversation.ts';
 import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,6 +11,9 @@ import * as dotenv from 'dotenv';
 import { z } from 'zod';
 import {
   RECOGNISED_DEMO_UIDS,
+  optionalAuth,
+  areDemoIdentitiesEnabled,
+  areDebugToolsEnabled,
   createShowcaseToken,
   isShowcaseModeEnabled,
   requireAuth,
@@ -60,6 +65,7 @@ import {
   analyseParticipantEventImage,
   buildDeterministicFallbackBriefing,
   generateAskAuvresenceResponse,
+  generatePlatformResponse,
   generateParticipantBriefing,
   isAiConfigured,
   isSttConfigured,
@@ -77,39 +83,33 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (req.path.startsWith('/api/')) res.setHeader('Cache-Control', 'no-store');
+  const json = res.json.bind(res);
+  res.json = (body: any) => {
+    if (res.statusCode >= 400 && body && typeof body === 'object' && !body.code) {
+      body.code = ({ 400: 'VALIDATION_ERROR', 401: 'AUTHENTICATION_FAILED', 403: 'FORBIDDEN', 404: 'NOT_FOUND', 503: 'DATABASE_UNAVAILABLE' } as Record<number, string>)[res.statusCode] || 'REQUEST_FAILED';
+    }
+    return json(body);
+  };
+  next();
+});
+app.use('/api/ai', createRateLimiter());
 app.use(express.json({ limit: '6mb' }));
+// Hybrid routes reject a supplied invalid identity rather than silently becoming a guest.
+app.use(['/api/events', '/api/ai/ask'], optionalAuth);
+
+function sendFailure(res: Response, error: unknown, message: string) {
+  console.error(message, error);
+  const failure = operationFailure(error);
+  return res.status(failure?.status || 500).json(failure || { code: 'REQUEST_FAILED', error: message });
+}
 
 // Helper to optionally resolve authenticated user on hybrid endpoints
-async function resolveOptionalUser(req: AuthRequest) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-  const token = authHeader.split('Bearer ')[1]?.trim();
-  if (!token) return null;
-
-  try {
-    if (token.startsWith('auv_sig_')) {
-      const verified = verifyShowcaseToken(token);
-      if (!verified) return null;
-      return await getOrCreateUser(
-        verified.uid,
-        verified.email,
-        verified.name,
-        true
-      );
-    }
-    const decoded = await adminAuth.verifyIdToken(token);
-    const email = decoded.email || `${decoded.uid}@firebase.user`;
-    const name =
-      decoded.name ||
-      email
-        .split('@')[0]
-        .replace(/[._-]/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-    return await getOrCreateUser(decoded.uid, email, name, false);
-  } catch {
-    return null;
-  }
-}
+async function resolveOptionalUser(req: AuthRequest) { return req.dbUser || null; }
 
 // ============================================================================
 // SAFE OPERATIONAL HEALTH ENDPOINT (SECTION 38)
@@ -133,6 +133,8 @@ async function handleHealthCheck(_req: Request, res: Response) {
     voice: voiceReady ? 'configured' : 'unconfigured',
     vision: visionReady ? 'configured' : 'unconfigured',
     showcaseMode,
+    debugToolsEnabled: areDebugToolsEnabled(),
+    demoIdentitiesEnabled: areDemoIdentitiesEnabled(),
     // Boolean flags for UI components
     databaseReady: dbHealthy,
     aiConfigured: aiReady,
@@ -214,7 +216,7 @@ const CreateEventSchema = z
       .optional(),
     venueName: z.string().trim().max(160).optional(),
     venueAddress: z.string().trim().max(240).optional(),
-    categories: z.array(z.string().trim().min(2).max(100)).optional(),
+    categories: z.array(z.string().trim().min(2).max(100)).max(50).optional(),
   })
   .refine((v) => v.endDate >= v.startDate, {
     message: 'End date must be on or after the start date.',
@@ -265,7 +267,7 @@ const UpdateEventConfigSchema = z.object({
   venueAddress: z.string().trim().max(240).optional(),
   venuePublished: z.boolean().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'LIVE', 'ARCHIVED']).optional(),
-  categories: z.array(z.string().trim().min(2).max(100)).optional(),
+  categories: z.array(z.string().trim().min(2).max(100)).max(50).optional(),
 });
 
 const ReviewApplicationSchema = z.object({
@@ -280,14 +282,14 @@ const SessionMutationSchema = z.object({
   title: z.string().trim().min(2).max(140),
   description: z.string().trim().min(4).max(1000),
   speaker: z.string().trim().max(140).optional(),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Format must be HH:MM'),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Format must be HH:MM'),
+  startTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'Use a valid 24-hour HH:MM time'),
+  endTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'Use a valid 24-hour HH:MM time'),
   dayLabel: z.string().trim().min(2).max(80).default('Day 1'),
   track: z.string().trim().min(2).max(100).default('General'),
   // Optional: a session can exist before a venue/place has been built.
   venueId: z.number().int().positive().nullable().optional(),
   status: z.enum(['COMPLETED', 'HAPPENING_NOW', 'UP_NEXT', 'UPCOMING']),
-});
+}).refine(value => value.endTime > value.startTime, { message: 'End time must be after start time.', path: ['endTime'] });
 
 const AnnouncementCreateSchema = z.object({
   title: z.string().trim().min(3).max(160),
@@ -371,9 +373,10 @@ const WaypointScanSchema = z.object({
 });
 
 const AskAISchema = z.object({
-  eventId: z.number().int().positive(),
+  eventId: z.number().int().positive().optional(),
   question: z.string().trim().min(2).max(500),
-});
+  history: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(1500) }).strict()).max(6).optional(),
+}).strict();
 
 const VoiceAskSchema = z.object({
   eventId: z.number().int().positive(),
@@ -405,7 +408,7 @@ const ResetDemoSchema = z.object({
 
 app.post('/api/auth/demo-session', async (req: Request, res: Response) => {
   try {
-    if (!isShowcaseModeEnabled()) {
+    if (!areDemoIdentitiesEnabled()) {
       return res.status(403).json({
         error: 'Showcase demo sessions are disabled (SHOWCASE_MODE=false).',
         code: 'SHOWCASE_MODE_DISABLED',
@@ -468,9 +471,7 @@ app.post('/api/auth/demo-session', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Failed to create demo session:', error);
-    return res
-      .status(500)
-      .json({ error: 'Failed to initialise session.' });
+    return sendFailure(res, error, 'Failed to initialise session.');
   }
 });
 
@@ -492,9 +493,7 @@ app.get('/api/me', requireAuth, async (req: AuthRequest, res: Response) => {
       showcaseMode: isShowcaseModeEnabled(),
     });
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ error: 'Failed to load profile.' });
+    return sendFailure(res, error, 'Failed to load profile.');
   }
 });
 
@@ -531,9 +530,7 @@ app.post(
       );
       return res.json({ user: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to switch role.' });
+      return sendFailure(res, error, 'Failed to switch role.');
     }
   }
 );
@@ -547,9 +544,7 @@ app.get('/api/me/journeys', requireAuth, async (req: AuthRequest, res: Response)
     const journeys = await getUserJourneys(req.dbUser!.id);
     return res.json(journeys);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ error: 'Failed to load user journeys.' });
+    return sendFailure(res, error, 'Failed to load user journeys.');
   }
 });
 
@@ -570,6 +565,7 @@ app.post('/api/events', requireAuth, async (req: AuthRequest, res: Response) => 
       // Ownership is ALWAYS derived from the verified identity, never the body.
       userId: owner.id,
       userEmail: owner.email,
+      isDemoUser: owner.isDemoSeed,
       ...d,
       // Type is stored in its own column — never folded into the subtitle.
       subtitle: d.subtitle ?? '',
@@ -602,9 +598,7 @@ app.get('/api/events', async (_req: Request, res: Response) => {
     );
     return res.json({ events: list });
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ error: 'Failed to load events.' });
+    return sendFailure(res, error, 'Failed to load events.');
   }
 });
 
@@ -632,9 +626,7 @@ app.get(
       if (error instanceof EventAccessDeniedError) {
         return res.status(404).json({ error: 'Event not found.' });
       }
-      return res
-        .status(500)
-        .json({ error: 'Failed to load event context.' });
+      return sendFailure(res, error, 'Failed to load event context.');
     }
   }
 );
@@ -677,9 +669,7 @@ app.post(
 
       return res.status(201).json({ application: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to submit application.' });
+      return sendFailure(res, error, 'Failed to submit application.');
     }
   }
 );
@@ -726,9 +716,7 @@ app.get(
       if (error instanceof EventAccessDeniedError) {
         return res.status(404).json({ error: 'Event not found.' });
       }
-      return res
-        .status(500)
-        .json({ error: 'Failed to compute route.' });
+      return sendFailure(res, error, 'Failed to compute route.');
     }
   }
 );
@@ -766,11 +754,9 @@ app.get(
         });
       }
 
-      return res.json({ application });
+      return res.json({ application: isAuthorisedOrganiser ? application : { ...application, reviewedByUserId: undefined } });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to retrieve application.' });
+      return sendFailure(res, error, 'Failed to retrieve application.');
     }
   }
 );
@@ -936,9 +922,7 @@ app.patch(
 
       return res.json({ credential: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to update credential.' });
+      return sendFailure(res, error, 'Failed to update credential.');
     }
   }
 );
@@ -1003,9 +987,7 @@ app.put(
 
       return res.json({ session: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to update session.' });
+      return sendFailure(res, error, 'Failed to update session.');
     }
   }
 );
@@ -1064,9 +1046,7 @@ app.post(
 
       return res.status(201).json({ session: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to create session.' });
+      return sendFailure(res, error, 'Failed to create session.');
     }
   }
 );
@@ -1124,9 +1104,7 @@ app.post(
 
       return res.status(201).json({ announcement: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to publish announcement.' });
+      return sendFailure(res, error, 'Failed to publish announcement.');
     }
   }
 );
@@ -1177,9 +1155,7 @@ app.post(
 
       return res.status(201).json({ venue: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to create venue.' });
+      return sendFailure(res, error, 'Failed to create venue.');
     }
   }
 );
@@ -1237,9 +1213,7 @@ app.put(
 
       return res.json({ venue: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to update venue.' });
+      return sendFailure(res, error, 'Failed to update venue.');
     }
   }
 );
@@ -1290,9 +1264,7 @@ app.patch(
 
       return res.json({ event: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to update event config.' });
+      return sendFailure(res, error, 'Failed to update event config.');
     }
   }
 );
@@ -1343,9 +1315,7 @@ app.post(
 
       return res.status(201).json({ floor: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to create floor.' });
+      return sendFailure(res, error, 'Failed to create floor.');
     }
   }
 );
@@ -1403,9 +1373,7 @@ app.put(
 
       return res.json({ floor: updated });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to save floor path.' });
+      return sendFailure(res, error, 'Failed to save floor path.');
     }
   }
 );
@@ -1456,9 +1424,7 @@ app.post(
 
       return res.status(201).json({ edge: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to create venue edge.' });
+      return sendFailure(res, error, 'Failed to create venue edge.');
     }
   }
 );
@@ -1506,9 +1472,7 @@ app.delete(
 
       return res.json({ ok: true });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to delete venue edge.' });
+      return sendFailure(res, error, 'Failed to delete venue edge.');
     }
   }
 );
@@ -1559,9 +1523,7 @@ app.post(
 
       return res.status(201).json({ resource: created });
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to create resource.' });
+      return sendFailure(res, error, 'Failed to create resource.');
     }
   }
 );
@@ -1685,11 +1647,11 @@ async function buildTrustedParticipantAIContext(
 
   return {
     participantName:
-      fullContext.myApplication?.applicantName || userDisplayName,
+      'Participant',
     participantRole:
       fullContext.myApplication?.category || 'Prospective Applicant',
     applicationStatus: fullContext.myApplication?.status || 'NOT_APPLIED',
-    credentialCode: fullContext.myCredential?.participantCode || null,
+    credentialCode: null,
     credentialStatus: fullContext.myCredential?.status || null,
     eventTitle: fullContext.event.title,
     eventDates: fullContext.event.datesLabel,
@@ -1788,66 +1750,84 @@ async function buildTrustedParticipantAIContext(
   };
 }
 
-app.post(
-  '/api/ai/ask',
-  requireAuth,
-  async (req: AuthRequest, res: Response) => {
-    try {
-      const parsed = AskAISchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({
-          error: 'Please provide a valid question.',
-          layer: 'LAYER_4_VALIDATION',
-          issues: parsed.error.issues,
-        });
+app.post('/api/ai/ask', async (req: AuthRequest, res: Response) => {
+  const parsed = AskAISchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'Use a question of 2–500 characters and up to six conversation messages.' });
+  const { question, eventId, history = [] } = parsed.data;
+  const q = question.toLowerCase().replace(/[’]/g, "'");
+  const actions: PlatformAction[] = [];
+  const direct = (answer: string) => res.json({ answer, actions, provider: 'event-state', model: 'deterministic', contextTimestamp: new Date().toISOString() });
+  try {
+    let snapshot: unknown;
+    if (eventId) {
+      const full = await getEventFullContext(eventId, req.dbUser?.id);
+      if (!full) return res.status(404).json({ error: 'Event not found.' });
+      if (/application|attention|pending/.test(q) && full.isOrganiser) {
+        const dashboard = await getOrganiserDashboardData(eventId);
+        actions.push({ type: 'OPEN_STUDIO', label: 'Review applications', eventId });
+        return direct(`${dashboard.stats.underReview} application(s) need review for ${full.event.title}. No decisions have been made by Auvresence.`);
       }
-
-      const trustedContext = await buildTrustedParticipantAIContext(
-        req.dbUser!.id,
-        req.dbUser!.displayName,
-        parsed.data.eventId
-      );
-
-      const directAnswer = answerEventQuestion(parsed.data.question, trustedContext);
-      if (directAnswer !== null) return res.json({ answer: directAnswer, provider: 'event-state', model: 'deterministic', contextTimestamp: new Date().toISOString() });
-
-      try {
-        const aiResult = await generateAskAuvresenceResponse(
-          parsed.data.question,
-          trustedContext
-        );
-        return res.json({
-          ...aiResult,
-          authorisedContextSummary: {
-            participant: trustedContext.participantName,
-            applicationStatus: trustedContext.applicationStatus,
-            upNextSession: trustedContext.upNext?.title || null,
-            upNextVenue: trustedContext.upNext?.venueName || null,
-            upNextNote: trustedContext.upNext?.lastUpdatedNote || null,
-          },
-        });
-      } catch (aiErr: any) {
-        const code =
-          aiErr instanceof AiNotConfiguredError
-            ? 'AI_NOT_CONFIGURED'
-            : 'AI_UNAVAILABLE';
-        return res.status(503).json({
-          code,
-          error:
-            'Auvresence Intelligence is currently unavailable. Your event information remains accessible.',
-          fallbackContext: {
-            happeningNow: trustedContext.happeningNow,
-            upNext: trustedContext.upNext,
-          },
-        });
+      // Guest/public facts never acquire participant-only context.
+      if (!req.dbUser) {
+        snapshot = { event: { title: full.event.title, description: full.event.description, dates: full.event.datesLabel, location: full.event.location }, schedule: full.sessions.map(s => ({ title: s.title, startTime: s.startTime, endTime: s.endTime, day: s.dayLabel })) };
+        if (/next|credential|where do i|changed/.test(q)) return direct('Sign in to see your own journey and authorised event updates.');
+      } else {
+        const trusted = await buildTrustedParticipantAIContext(req.dbUser.id, 'Participant', eventId);
+        if (/brief (my )?day|brief me/.test(q)) return direct(buildDeterministicFallbackBriefing(trusted).briefing);
+        const answer = answerEventQuestion(question, trusted);
+        if (answer !== null) {
+          if (/credential/.test(q)) actions.push({ type: 'OPEN_CREDENTIAL', label: 'My credential', eventId });
+          else if (/where|venue|go|room/.test(q)) actions.push({ type: 'OPEN_VENUE', label: 'View venue', eventId });
+          else actions.push({ type: 'OPEN_JOURNEY', label: 'Open journey', eventId });
+          return direct(answer);
+        }
+        // Minimise identity before any external provider request.
+        snapshot = { ...trusted, participantName: 'Participant', credentialCode: null, waypointTrail: [] };
       }
-    } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to process AI request.' });
+    } else {
+      const published = (await getPublishedEvents()).filter(e => e.visibility === 'PUBLIC' && ['PUBLISHED', 'LIVE'].includes(e.status) && (isShowcaseModeEnabled() || !e.isDemoSeed));
+      const visible = published.slice(0, 10).map(e => ({ id: e.id, title: e.title, description: e.description.slice(0, 800), location: e.location, dates: e.datesLabel, applicationStatus: e.applicationStatus }));
+      const journeys = req.dbUser ? await getUserJourneys(req.dbUser.id) : null;
+      snapshot = { publicEvents: visible, ownJourneys: journeys ? { participating: journeys.participating.map(j => ({ eventId: j.event.id, title: j.event.title, applicationStatus: j.application.status })), organising: journeys.organising.map(e => ({ eventId: e.id, title: e.title })) } : null };
+      if (/what is auvresence|what can you do|who are you/.test(q)) {
+        actions.push({ type: 'EXPLORE_EVENTS', label: 'Explore events' });
+        return direct('Auvresence brings event discovery, applications, participant journeys, schedules, venue routes and credentials into one place. Organisers manage their event through Studio.');
+      }
+      if (/organis|organiz|create (an )?event|host (an )?event/.test(q)) {
+        actions.push({ type: 'CREATE_EVENT', label: req.dbUser ? 'Start creating event' : 'Sign in to start' });
+        return direct('Start with your event identity, dates and location. The creation form saves your event and grants you Studio access after a successful server response.');
+      }
+      if (/explore|discover|what events|can i join|find (an )?event/.test(q)) {
+        actions.push({ type: 'EXPLORE_EVENTS', label: 'Explore events' });
+        return direct(visible.length ? `Public events: ${visible.map(e => `${e.title} (${e.applicationStatus === 'OPEN' ? 'applications open' : 'applications ' + e.applicationStatus.toLowerCase()})`).join('; ')}.` : 'No public events are available right now.');
+      }
+      if (/my journey|my event|what's next|where do i|my application|my credential/.test(q)) {
+        if (!journeys) return direct('Sign in to see your own event journeys.');
+        for (const j of journeys.participating.slice(0, 3)) actions.push({ type: 'OPEN_JOURNEY', label: j.event.title, eventId: j.event.id });
+        for (const e of journeys.organising.slice(0, 3)) actions.push({ type: 'OPEN_STUDIO', label: e.title, eventId: e.id });
+        return direct(actions.length ? 'Open your event to see its current schedule, application status and venue information.' : 'You do not have any event journeys yet. Explore events or organise one.');
+      }
+      if (/applications.*attention|pending applications/.test(q)) {
+        if (!journeys?.organising.length) return direct('No organising events are available for this identity.');
+        const counts = await Promise.all(journeys.organising.map(async e => ({ event: e, pending: (await getOrganiserDashboardData(e.id)).stats.underReview })));
+        for (const row of counts.slice(0, 5)) actions.push({ type: 'OPEN_STUDIO', label: row.event.title, eventId: row.event.id });
+        return direct(counts.map(row => `${row.event.title}: ${row.pending} awaiting review`).join('; ') + '.');
+      }
     }
+    try {
+      const result = await generatePlatformResponse({ systemInstruction: AUVRESENCE_INSTRUCTIONS, prompt: conversationPrompt(question, snapshot, history), maxTokens: 350 });
+      return res.json({ answer: result.text, actions, provider: result.provider, model: result.model, contextTimestamp: new Date().toISOString() });
+    } catch (error) {
+      console.error('Auvresence provider unavailable:', error instanceof Error ? error.name : 'UnknownError');
+      return res.status(503).json({ code: error instanceof AiNotConfiguredError ? 'AI_NOT_CONFIGURED' : 'AI_UNAVAILABLE', error: 'Auvresence intelligence is temporarily unavailable. Your event information and tools are still accessible.' });
+    }
+  } catch (error) {
+    if (error instanceof EventAccessDeniedError) return res.status(404).json({ error: 'Event not found.' });
+    console.error('Auvresence context failed:', error);
+    const failure = databaseFailure(error);
+    return res.status(failure?.status || 500).json(failure || { error: 'Could not load authorised event information.' });
   }
-);
+});
 
 app.post(
   '/api/ai/voice-ask',
@@ -2074,9 +2054,7 @@ app.post(
         });
       }
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to generate briefing.' });
+      return sendFailure(res, error, 'Failed to generate briefing.');
     }
   }
 );
@@ -2168,9 +2146,7 @@ app.post(
 
       return res.json(result);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'Failed to reset demo state.' });
+      return sendFailure(res, error, 'Failed to reset demo state.');
     }
   }
 );
@@ -2178,6 +2154,13 @@ app.post(
 // ============================================================================
 // VITE DEV SERVER / STATIC ASSET SERVING
 // ============================================================================
+
+app.use((error: any, _req: Request, res: Response, _next: express.NextFunction) => {
+  if (error?.type === 'entity.too.large') return res.status(413).json({ code: 'VALIDATION_ERROR', error: 'Request is too large.' });
+  if (error instanceof SyntaxError) return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'Request body must be valid JSON.' });
+  console.error('Unhandled request error:', error);
+  return res.status(500).json({ code: 'REQUEST_FAILED', error: 'The request could not be completed.' });
+});
 
 async function startServer() {
   const PORT = Number(process.env.PORT || 3000);

@@ -35,5 +35,5 @@ await req(`/api/events/${id}/context`,null,'GET',null,404);
 const ownJourneys=await req('/api/me/journeys',a);assert.ok(ownJourneys.organising.some(j=>j.id===id));checks++;
 const memberContext=await req(`/api/events/${id}/context`,b);assert.equal(memberContext.event.id,id);checks++;
 const direct=await req('/api/ai/ask',b,'POST',{eventId:id,question:"What's next?"});assert.equal(direct.provider,'event-state');checks++;
-await req('/api/ai/ask',null,'POST',{eventId:id,question:"What's next?"},401);
+await req('/api/ai/ask',null,'POST',{eventId:id,question:"What's next?"},404);
 console.log(`${checks} integration assertions passed; event ${id}`);

@@ -12,13 +12,14 @@ import {
 } from './ai-provider.ts';
 
 export class GeminiAiProvider implements TextAiProvider {
+  constructor(private providerOverride?: string, private modelOverride?: string) {}
   private getVerifiedConfig(): {
     provider: string;
     model: string;
     apiKey: string;
   } {
-    const provider = process.env.AI_PROVIDER?.trim().toLowerCase();
-    const model = process.env.AI_MODEL?.trim();
+    const provider = this.providerOverride || process.env.AI_PROVIDER?.trim().toLowerCase();
+    const model = this.modelOverride || process.env.AI_MODEL?.trim();
     const apiKey = process.env.GEMINI_API_KEY?.trim();
 
     if (
@@ -41,6 +42,7 @@ export class GeminiAiProvider implements TextAiProvider {
     return new GoogleGenAI({
       apiKey,
       httpOptions: {
+        timeout: 14000,
         headers: {
           'User-Agent': 'aistudio-build',
         },
@@ -58,6 +60,7 @@ export class GeminiAiProvider implements TextAiProvider {
       config: {
         systemInstruction: input.systemInstruction,
         temperature: 0.2,
+        maxOutputTokens: input.maxTokens || 350,
       },
     });
 

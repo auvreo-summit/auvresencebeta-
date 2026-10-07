@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { ProfileStorageError } from './errors.ts';
+import { OperationError, ProfileStorageError } from './errors.ts';
 import { and, asc, desc, eq, inArray, ne, sql, getTableColumns, getTableName } from 'drizzle-orm';
 import { db } from './index.ts';
 import {
@@ -104,8 +104,15 @@ export async function getUserById(userId: number) {
 }
 
 let isSeeding = false;
+let seedPromise: Promise<void> | null = null;
 
 export async function ensureShowcaseDataSeeded() {
+  if (process.env.SHOWCASE_MODE !== 'true' || process.env.ENABLE_DEMO_IDENTITIES !== 'true') return;
+  // Coalesce startup seeding and avoid writes on every context poll.
+  if (!seedPromise) seedPromise = seedShowcaseData().catch(error => { seedPromise = null; throw error; });
+  return seedPromise;
+}
+async function seedShowcaseData() {
   if (isSeeding) return;
   try {
     const existingOrgs = await db.select().from(organisations);
@@ -922,6 +929,7 @@ export async function ensureShowcaseDataSeeded() {
     });
   } catch (error) {
     console.error('Error seeding showcase data:', error);
+    throw error;
   } finally {
     isSeeding = false;
   }
@@ -1129,7 +1137,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
     // PRIVATE events are invisible (as if non-existent) to everyone except the
     // organising team and people who already hold an application to them.
     if (
-      event.visibility === 'PRIVATE' &&
+      (event.visibility === 'PRIVATE' || !['LIVE', 'PUBLISHED'].includes(event.status) || (event.isDemoSeed && process.env.SHOWCASE_MODE !== 'true')) &&
       !viewerIsOrganiser &&
       !viewerHasApplication
     ) {
@@ -1267,7 +1275,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
       ? ['ALL_APPLICANTS', 'ACCEPTED_ONLY', 'ORGANISERS_ONLY']
       : isAccepted
       ? ['ALL_APPLICANTS', 'ACCEPTED_ONLY']
-      : ['ALL_APPLICANTS'];
+      : myApplication ? ['ALL_APPLICANTS'] : [];
 
     const rawAnnouncements = await db
       .select()
@@ -1285,6 +1293,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
 
     const visibleAnnouncements = rawAnnouncements.map((a) => ({
       ...a,
+      authorUserId: isOrganiser ? a.authorUserId : null,
       attachedVenueName: a.attachedVenueId
         ? venueMapById.get(a.attachedVenueId) || null
         : null,
@@ -1296,7 +1305,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
     const allowedResourceAudiences =
       isOrganiser || isAccepted
         ? ['ALL_APPLICANTS', 'ACCEPTED_ONLY']
-        : ['ALL_APPLICANTS'];
+        : myApplication ? ['ALL_APPLICANTS'] : [];
 
     const visibleResources = await db
       .select()
@@ -1359,7 +1368,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
       sessions: eventSessions,
       announcements: visibleAnnouncements,
       resources: visibleResources,
-      myApplication,
+      myApplication: myApplication ? { ...myApplication, reviewedByUserId: undefined } : null,
       myCredential,
       isOrganiser,
       waypointTrail,
@@ -1368,7 +1377,7 @@ export async function getEventFullContext(eventId: number, userId?: number) {
         happeningNow,
         upNext,
         latestUpdate,
-        nextDestination: nextDestinationVenue,
+        nextDestination: canSeeVenue && nextDestinationVenue ? { ...nextDestinationVenue, waypointToken: isOrganiser ? nextDestinationVenue.waypointToken : '' } : null,
       },
     };
   } catch (error) {
@@ -1420,83 +1429,90 @@ export async function submitParticipantApplication(input: {
   isDemoUser?: boolean;
 }) {
   try {
-    const [ev] = await db
-      .select()
-      .from(events)
-      .where(eq(events.id, input.eventId));
-    if (!ev) {
-      throw new Error('Event not found.');
-    }
-    if (ev.applicationStatus === 'CLOSED') {
-      throw new Error('Applications for this event are currently closed.');
-    }
-    if (ev.applicationStatus === 'COMING_SOON') {
-      throw new Error('Applications for this event have not opened yet.');
-    }
-
-    const existing = await db
-      .select()
-      .from(applications)
-      .where(
-        and(
-          eq(applications.eventId, input.eventId),
-          eq(applications.userId, input.userId)
-        )
-      );
-
-    if (ev.visibility === 'PRIVATE' && existing.length === 0) {
-      // Private events cannot be discovered or applied to by ID alone.
-      throw new Error('Event not found.');
-    }
-
-    if (existing.length > 0) {
-      if (existing[0].status === 'ACCEPTED') {
-        throw new Error('You have already been accepted to this event.');
+    return await db.transaction(async tx => {
+      const [ev] = await tx
+        .select()
+        .from(events)
+        .where(eq(events.id, input.eventId)).for('update');
+      if (!ev || !['LIVE', 'PUBLISHED'].includes(ev.status) || (ev.isDemoSeed && process.env.SHOWCASE_MODE !== 'true')) {
+        throw new OperationError(404, 'NOT_FOUND', 'Event not found.');
       }
-      const [updated] = await db
-        .update(applications)
-        .set({
+      if (ev.applicationStatus === 'CLOSED') {
+        throw new OperationError(409, 'APPLICATIONS_CLOSED', 'Applications for this event are currently closed.');
+      }
+      if (ev.applicationStatus === 'COMING_SOON') {
+        throw new OperationError(409, 'APPLICATIONS_NOT_OPEN', 'Applications for this event have not opened yet.');
+      }
+
+      const categories = JSON.parse(ev.categories) as string[];
+      if (!(categories.length ? categories : ['Participant']).includes(input.category)) throw new OperationError(400, 'VALIDATION_ERROR', 'Choose a category configured for this event.');
+      const config = ev.applicationConfig ? JSON.parse(ev.applicationConfig) : {};
+      if (config.requirePhone && !input.phone?.trim()) throw new OperationError(400, 'VALIDATION_ERROR', 'This event requires a phone number.');
+      if (config.customQuestionRequired && !input.customAnswer?.trim()) throw new OperationError(400, 'VALIDATION_ERROR', 'Please answer the event question.');
+      const existing = await tx
+        .select()
+        .from(applications)
+        .where(
+          and(
+            eq(applications.eventId, input.eventId),
+            eq(applications.userId, input.userId)
+          )
+        );
+
+      if (ev.visibility === 'PRIVATE' && existing.length === 0) {
+        // Private events cannot be discovered or applied to by ID alone.
+        throw new OperationError(404, 'NOT_FOUND', 'Event not found.');
+      }
+
+      if (existing.length > 0) {
+        if (existing[0].status === 'ACCEPTED') {
+          throw new OperationError(409, 'ALREADY_ACCEPTED', 'You have already been accepted to this event.');
+        }
+        const [updated] = await tx
+          .update(applications)
+          .set({
+            applicantName: input.applicantName,
+            phone: input.phone || null,
+            institution: input.institution,
+            category: input.category,
+            statement: input.statement,
+            customAnswer: input.customAnswer || null,
+            status: 'UNDER_REVIEW',
+          })
+          .where(eq(applications.id, existing[0].id))
+          .returning();
+        return updated;
+      }
+
+      const [created] = await tx
+        .insert(applications)
+        .values({
+          eventId: input.eventId,
+          userId: input.userId,
           applicantName: input.applicantName,
+          applicantEmail: input.applicantEmail,
           phone: input.phone || null,
           institution: input.institution,
           category: input.category,
           statement: input.statement,
           customAnswer: input.customAnswer || null,
           status: 'UNDER_REVIEW',
+          isDemoSeed: Boolean(input.isDemoUser),
         })
-        .where(eq(applications.id, existing[0].id))
         .returning();
-      return updated;
-    }
 
-    const [created] = await db
-      .insert(applications)
-      .values({
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        userId: input.userId,
-        applicantName: input.applicantName,
-        applicantEmail: input.applicantEmail,
-        phone: input.phone || null,
-        institution: input.institution,
-        category: input.category,
-        statement: input.statement,
-        customAnswer: input.customAnswer || null,
-        status: 'UNDER_REVIEW',
-        isDemoSeed: Boolean(input.isDemoUser),
-      })
-      .returning();
+        actorUserId: input.userId,
+        actorEmail: input.applicantEmail,
+        action: 'APPLICATION_SUBMITTED',
+        resourceType: 'APPLICATION',
+        resourceId: String(created.id),
+        details: `${input.applicantName} applied under ${input.category}`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.userId,
-      actorEmail: input.applicantEmail,
-      action: 'APPLICATION_SUBMITTED',
-      resourceType: 'APPLICATION',
-      resourceId: String(created.id),
-      details: `${input.applicantName} applied under ${input.category}`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error(
       'Database query failed in submitParticipantApplication:',
@@ -1671,24 +1687,30 @@ export async function updateCredentialStatusByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [updated] = await db
-      .update(credentials)
-      .set({ status: input.status })
-      .where(eq(credentials.id, input.credentialId))
-      .returning();
+    return await db.transaction(async tx => {
+      const [credential] = await tx.select().from(credentials).where(eq(credentials.id, input.credentialId));
+      if (!credential) throw new OperationError(404, 'NOT_FOUND', 'Credential not found.');
+      const [application] = await tx.select().from(applications).where(eq(applications.id, credential.applicationId)).for('update');
+      if (input.status === 'ACTIVE' && application?.status !== 'ACCEPTED') throw new OperationError(409, 'INVALID_STATE', 'Only an accepted participant can hold an active credential.');
+      const [updated] = await tx
+        .update(credentials)
+        .set({ status: input.status })
+        .where(eq(credentials.id, input.credentialId))
+        .returning();
 
-    if (updated) {
-      await db.insert(auditLogs).values({
-        eventId: updated.eventId,
-        actorUserId: input.actorUserId,
-        actorEmail: input.actorEmail,
-        action: `CREDENTIAL_${input.status}`,
-        resourceType: 'CREDENTIAL',
-        resourceId: String(updated.id),
-        details: `Credential ${updated.participantCode} set to ${input.status}.`,
-      });
-    }
-    return updated;
+      if (updated) {
+        await tx.insert(auditLogs).values({
+          eventId: updated.eventId,
+          actorUserId: input.actorUserId,
+          actorEmail: input.actorEmail,
+          action: `CREDENTIAL_${input.status}`,
+          resourceType: 'CREDENTIAL',
+          resourceId: String(updated.id),
+          details: `Credential ${updated.participantCode} set to ${input.status}.`,
+        });
+      }
+      return updated;
+    });
   } catch (error) {
     console.error(
       'Database query failed in updateCredentialStatusByOrganiser:',
@@ -1760,85 +1782,87 @@ export async function updateSessionByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const existingRows = await db
-      .select({
-        id: sessions.id,
-        venueId: sessions.venueId,
-        startTime: sessions.startTime,
-        venueName: venues.name,
-      })
-      .from(sessions)
-      .leftJoin(venues, eq(sessions.venueId, venues.id))
-      .where(
-        and(
-          eq(sessions.id, input.sessionId),
-          eq(sessions.eventId, input.eventId)
-        )
-      );
-
-    const existing = existingRows[0];
-    if (!existing) {
-      throw new Error('Session not found for this event.');
-    }
-
-    const newVenueId = input.venueId ?? null;
-    let targetVenue: { id: number; name: string } | null = null;
-    if (newVenueId !== null) {
-      const targetVenueRows = await db
-        .select()
-        .from(venues)
+    return await db.transaction(async tx => {
+      const existingRows = await tx
+        .select({
+          id: sessions.id,
+          venueId: sessions.venueId,
+          startTime: sessions.startTime,
+          venueName: venues.name,
+        })
+        .from(sessions)
+        .leftJoin(venues, eq(sessions.venueId, venues.id))
         .where(
-          and(eq(venues.id, newVenueId), eq(venues.eventId, input.eventId))
+          and(
+            eq(sessions.id, input.sessionId),
+            eq(sessions.eventId, input.eventId)
+          )
         );
-      targetVenue = targetVenueRows[0] ?? null;
-      if (!targetVenue) {
-        throw new Error('Selected place does not belong to this event.');
+
+      const existing = existingRows[0];
+      if (!existing) {
+        throw new Error('Session not found for this event.');
       }
-    }
 
-    let changeNote: string | null = null;
-    if (existing.venueId !== newVenueId) {
-      changeNote = targetVenue
-        ? `LOCATION UPDATED · ${
-            existing.venueName ? `Moved from ${existing.venueName} to` : 'Now at'
-          } ${targetVenue.name}`
-        : 'LOCATION UPDATED · Place removed from this session';
-    } else if (existing.startTime !== input.startTime) {
-      changeNote = `TIME UPDATED · Rescheduled from ${existing.startTime} to ${input.startTime}`;
-    }
+      const newVenueId = input.venueId ?? null;
+      let targetVenue: { id: number; name: string } | null = null;
+      if (newVenueId !== null) {
+        const targetVenueRows = await tx
+          .select()
+          .from(venues)
+          .where(
+            and(eq(venues.id, newVenueId), eq(venues.eventId, input.eventId))
+          );
+        targetVenue = targetVenueRows[0] ?? null;
+        if (!targetVenue) {
+          throw new OperationError(400, 'VALIDATION_ERROR', 'Selected place does not belong to this event.');
+        }
+      }
 
-    const [updated] = await db
-      .update(sessions)
-      .set({
-        title: input.title,
-        description: input.description,
-        speaker: input.speaker || null,
-        startTime: input.startTime,
-        endTime: input.endTime,
-        venueId: newVenueId,
-        status: input.status,
-        lastUpdatedNote: changeNote,
-        updatedAt: new Date(),
-      })
-      .where(eq(sessions.id, input.sessionId))
-      .returning();
+      let changeNote: string | null = null;
+      if (existing.venueId !== newVenueId) {
+        changeNote = targetVenue
+          ? `LOCATION UPDATED · ${
+              existing.venueName ? `Moved from ${existing.venueName} to` : 'Now at'
+            } ${targetVenue.name}`
+          : 'LOCATION UPDATED · Place removed from this session';
+      } else if (existing.startTime !== input.startTime) {
+        changeNote = `TIME UPDATED · Rescheduled from ${existing.startTime} to ${input.startTime}`;
+      }
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action:
-        existing.venueId !== newVenueId
-          ? 'SESSION_VENUE_CHANGED'
-          : 'SESSION_UPDATED',
-      resourceType: 'SESSION',
-      resourceId: String(input.sessionId),
-      details:
-        changeNote ||
-        `Updated session "${input.title}" (${input.startTime}–${input.endTime}${targetVenue ? ` at ${targetVenue.name}` : ''})`,
+      const [updated] = await tx
+        .update(sessions)
+        .set({
+          title: input.title,
+          description: input.description,
+          speaker: input.speaker || null,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          venueId: newVenueId,
+          status: input.status,
+          lastUpdatedNote: changeNote,
+          updatedAt: new Date(),
+        })
+        .where(eq(sessions.id, input.sessionId))
+        .returning();
+
+      await tx.insert(auditLogs).values({
+        eventId: input.eventId,
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action:
+          existing.venueId !== newVenueId
+            ? 'SESSION_VENUE_CHANGED'
+            : 'SESSION_UPDATED',
+        resourceType: 'SESSION',
+        resourceId: String(input.sessionId),
+        details:
+          changeNote ||
+          `Updated session "${input.title}" (${input.startTime}–${input.endTime}${targetVenue ? ` at ${targetVenue.name}` : ''})`,
+      });
+
+      return updated;
     });
-
-    return updated;
   } catch (error) {
     console.error('Database query failed in updateSessionByOrganiser:', error);
     throw new Error('Failed to update session.', { cause: error });
@@ -1860,47 +1884,49 @@ export async function createSessionByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const createVenueId = input.venueId ?? null;
-    if (createVenueId !== null) {
-      // Relationship integrity: the place must belong to THIS event.
-      const own = await db
-        .select({ id: venues.id })
-        .from(venues)
-        .where(
-          and(eq(venues.id, createVenueId), eq(venues.eventId, input.eventId))
-        );
-      if (own.length === 0) {
-        throw new Error('Selected place does not belong to this event.');
+    return await db.transaction(async tx => {
+      const createVenueId = input.venueId ?? null;
+      if (createVenueId !== null) {
+        // Relationship integrity: the place must belong to THIS event.
+        const own = await tx
+          .select({ id: venues.id })
+          .from(venues)
+          .where(
+            and(eq(venues.id, createVenueId), eq(venues.eventId, input.eventId))
+          );
+        if (own.length === 0) {
+          throw new OperationError(400, 'VALIDATION_ERROR', 'Selected place does not belong to this event.');
+        }
       }
-    }
-    const [created] = await db
-      .insert(sessions)
-      .values({
+      const [created] = await tx
+        .insert(sessions)
+        .values({
+          eventId: input.eventId,
+          venueId: createVenueId,
+          title: input.title,
+          description: input.description,
+          speaker: input.speaker || null,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          dayLabel: input.dayLabel,
+          track: input.track,
+          status: input.status,
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        venueId: createVenueId,
-        title: input.title,
-        description: input.description,
-        speaker: input.speaker || null,
-        startTime: input.startTime,
-        endTime: input.endTime,
-        dayLabel: input.dayLabel,
-        track: input.track,
-        status: input.status,
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'SESSION_CREATED',
+        resourceType: 'SESSION',
+        resourceId: String(created.id),
+        details: `Created session "${input.title}" (${input.startTime}–${input.endTime}).`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'SESSION_CREATED',
-      resourceType: 'SESSION',
-      resourceId: String(created.id),
-      details: `Created session "${input.title}" (${input.startTime}–${input.endTime}).`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error('Database query failed in createSessionByOrganiser:', error);
     throw new Error('Failed to create session.', { cause: error });
@@ -1920,33 +1946,43 @@ export async function createAnnouncementByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [created] = await db
-      .insert(announcements)
-      .values({
+    return await db.transaction(async tx => {
+      if (input.attachedVenueId) {
+        const own = await tx.select({ id: venues.id }).from(venues).where(and(eq(venues.id, input.attachedVenueId), eq(venues.eventId, input.eventId)));
+        if (!own.length) throw new OperationError(400, 'VALIDATION_ERROR', 'Attached place must belong to this event.');
+      }
+      if (input.attachedSessionId) {
+        const own = await tx.select({ id: sessions.id }).from(sessions).where(and(eq(sessions.id, input.attachedSessionId), eq(sessions.eventId, input.eventId)));
+        if (!own.length) throw new OperationError(400, 'VALIDATION_ERROR', 'Attached session must belong to this event.');
+      }
+      const [created] = await tx
+        .insert(announcements)
+        .values({
+          eventId: input.eventId,
+          authorUserId: input.actorUserId,
+          title: input.title,
+          body: input.body,
+          announcementType: input.announcementType || 'GENERAL',
+          attachedVenueId: input.attachedVenueId || null,
+          attachedSessionId: input.attachedSessionId || null,
+          audience: input.audience,
+          priority: input.priority,
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        authorUserId: input.actorUserId,
-        title: input.title,
-        body: input.body,
-        announcementType: input.announcementType || 'GENERAL',
-        attachedVenueId: input.attachedVenueId || null,
-        attachedSessionId: input.attachedSessionId || null,
-        audience: input.audience,
-        priority: input.priority,
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'ANNOUNCEMENT_PUBLISHED',
+        resourceType: 'ANNOUNCEMENT',
+        resourceId: String(created.id),
+        details: `Published "${input.title}" (${input.announcementType || 'GENERAL'} · ${input.priority}) for audience ${input.audience}.`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'ANNOUNCEMENT_PUBLISHED',
-      resourceType: 'ANNOUNCEMENT',
-      resourceId: String(created.id),
-      details: `Published "${input.title}" (${input.announcementType || 'GENERAL'} · ${input.priority}) for audience ${input.audience}.`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error(
       'Database query failed in createAnnouncementByOrganiser:',
@@ -1975,41 +2011,47 @@ export async function createVenueByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [created] = await db
-      .insert(venues)
-      .values({
+    return await db.transaction(async tx => {
+      if (input.floorId) {
+        const own = await tx.select().from(venueFloors).where(and(eq(venueFloors.id, input.floorId), eq(venueFloors.eventId, input.eventId)));
+        if (!own.length || own[0].name !== input.floor) throw new OperationError(400, 'VALIDATION_ERROR', 'Choose a floor configured for this event.');
+      }
+      const [created] = await tx
+        .insert(venues)
+        .values({
+          eventId: input.eventId,
+          floorId: input.floorId || null,
+          name: input.name,
+          shortDescription: input.shortDescription,
+          floor: input.floor,
+          zone: input.zone,
+          poiType: input.poiType || 'ROOM',
+          poiCategory: input.poiCategory || 'EVENT',
+          operationalStatus: input.operationalStatus || 'OPEN',
+          accessible: input.accessible ?? true,
+          connectedFloorNames: input.connectedFloors
+            ? JSON.stringify(input.connectedFloors)
+            : null,
+          mapX: input.mapX,
+          mapY: input.mapY,
+          capacity: input.capacity || 80,
+          waypointToken: 'wp_' + generateOpaqueToken(14),
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        floorId: input.floorId || null,
-        name: input.name,
-        shortDescription: input.shortDescription,
-        floor: input.floor,
-        zone: input.zone,
-        poiType: input.poiType || 'ROOM',
-        poiCategory: input.poiCategory || 'EVENT',
-        operationalStatus: input.operationalStatus || 'OPEN',
-        accessible: input.accessible ?? true,
-        connectedFloorNames: input.connectedFloors
-          ? JSON.stringify(input.connectedFloors)
-          : null,
-        mapX: input.mapX,
-        mapY: input.mapY,
-        capacity: input.capacity || 80,
-        waypointToken: 'wp_' + generateOpaqueToken(14),
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'VENUE_CREATED',
+        resourceType: 'VENUE',
+        resourceId: String(created.id),
+        details: `Added venue POI "${input.name}" (${input.poiType || 'ROOM'} · ${input.floor} · ${input.zone}).`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'VENUE_CREATED',
-      resourceType: 'VENUE',
-      resourceId: String(created.id),
-      details: `Added venue POI "${input.name}" (${input.poiType || 'ROOM'} · ${input.floor} · ${input.zone}).`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error('Database query failed in createVenueByOrganiser:', error);
     throw new Error('Failed to create venue.', { cause: error });
@@ -2035,44 +2077,46 @@ export async function updateVenueByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [updated] = await db
-      .update(venues)
-      .set({
-        name: input.name,
-        shortDescription: input.shortDescription,
-        floor: input.floor,
-        zone: input.zone,
-        poiType: input.poiType,
-        poiCategory: input.poiCategory,
-        operationalStatus: input.operationalStatus,
-        accessible: input.accessible,
-        connectedFloorNames: input.connectedFloors
-          ? JSON.stringify(input.connectedFloors)
-          : null,
-        mapX: input.mapX,
-        mapY: input.mapY,
-        capacity: input.capacity ?? 80,
-      })
-      .where(
-        and(eq(venues.id, input.venueId), eq(venues.eventId, input.eventId))
-      )
-      .returning();
+    return await db.transaction(async tx => {
+      const [updated] = await tx
+        .update(venues)
+        .set({
+          name: input.name,
+          shortDescription: input.shortDescription,
+          floor: input.floor,
+          zone: input.zone,
+          poiType: input.poiType,
+          poiCategory: input.poiCategory,
+          operationalStatus: input.operationalStatus,
+          accessible: input.accessible,
+          connectedFloorNames: input.connectedFloors
+            ? JSON.stringify(input.connectedFloors)
+            : null,
+          mapX: input.mapX,
+          mapY: input.mapY,
+          capacity: input.capacity ?? 80,
+        })
+        .where(
+          and(eq(venues.id, input.venueId), eq(venues.eventId, input.eventId))
+        )
+        .returning();
 
-    if (!updated) {
-      throw new Error('Venue location not found for this event.');
-    }
+      if (!updated) {
+        throw new Error('Venue location not found for this event.');
+      }
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'VENUE_UPDATED',
-      resourceType: 'VENUE',
-      resourceId: String(updated.id),
-      details: `Updated venue "${updated.name}" (${updated.floor} · Status: ${updated.operationalStatus}).`,
+      await tx.insert(auditLogs).values({
+        eventId: input.eventId,
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'VENUE_UPDATED',
+        resourceType: 'VENUE',
+        resourceId: String(updated.id),
+        details: `Updated venue "${updated.name}" (${updated.floor} · Status: ${updated.operationalStatus}).`,
+      });
+
+      return updated;
     });
-
-    return updated;
   } catch (error) {
     console.error('Database query failed in updateVenueByOrganiser:', error);
     throw new Error('Failed to update venue location.', { cause: error });
@@ -2090,32 +2134,34 @@ export async function createFloorByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [created] = await db
-      .insert(venueFloors)
-      .values({
+    return await db.transaction(async tx => {
+      const [created] = await tx
+        .insert(venueFloors)
+        .values({
+          eventId: input.eventId,
+          name: input.name,
+          levelOrder: input.levelOrder,
+          description: input.description || null,
+          recordedPathJson: input.recordedPath
+            ? JSON.stringify(input.recordedPath)
+            : null,
+          recordedDistanceMeters: input.recordedDistanceMeters || 0,
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        name: input.name,
-        levelOrder: input.levelOrder,
-        description: input.description || null,
-        recordedPathJson: input.recordedPath
-          ? JSON.stringify(input.recordedPath)
-          : null,
-        recordedDistanceMeters: input.recordedDistanceMeters || 0,
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'FLOOR_CREATED',
+        resourceType: 'FLOOR',
+        resourceId: String(created.id),
+        details: `Added venue floor "${created.name}" (Level ${created.levelOrder}).`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'FLOOR_CREATED',
-      resourceType: 'FLOOR',
-      resourceId: String(created.id),
-      details: `Added venue floor "${created.name}" (Level ${created.levelOrder}).`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error('Database query failed in createFloorByOrganiser:', error);
     throw new Error('Failed to create venue floor.', { cause: error });
@@ -2132,36 +2178,38 @@ export async function updateFloorPathByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [updated] = await db
-      .update(venueFloors)
-      .set({
-        description: input.description ?? undefined,
-        recordedPathJson: JSON.stringify(input.recordedPath),
-        recordedDistanceMeters: input.recordedDistanceMeters,
-      })
-      .where(
-        and(
-          eq(venueFloors.id, input.floorId),
-          eq(venueFloors.eventId, input.eventId)
+    return await db.transaction(async tx => {
+      const [updated] = await tx
+        .update(venueFloors)
+        .set({
+          description: input.description ?? undefined,
+          recordedPathJson: JSON.stringify(input.recordedPath),
+          recordedDistanceMeters: input.recordedDistanceMeters,
+        })
+        .where(
+          and(
+            eq(venueFloors.id, input.floorId),
+            eq(venueFloors.eventId, input.eventId)
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    if (!updated) {
-      throw new Error('Floor not found for this event.');
-    }
+      if (!updated) {
+        throw new Error('Floor not found for this event.');
+      }
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'FLOOR_PATH_RECORDED',
-      resourceType: 'FLOOR',
-      resourceId: String(updated.id),
-      details: `Recorded Walk-to-Map corridor path on ${updated.name} (${input.recordedPath.length} waypoints · ~${input.recordedDistanceMeters}m).`,
+      await tx.insert(auditLogs).values({
+        eventId: input.eventId,
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'FLOOR_PATH_RECORDED',
+        resourceType: 'FLOOR',
+        resourceId: String(updated.id),
+        details: `Recorded Walk-to-Map corridor path on ${updated.name} (${input.recordedPath.length} waypoints · ~${input.recordedDistanceMeters}m).`,
+      });
+
+      return updated;
     });
-
-    return updated;
   } catch (error) {
     console.error('Database query failed in updateFloorPathByOrganiser:', error);
     throw new Error('Failed to save floor path.', { cause: error });
@@ -2179,30 +2227,35 @@ export async function createVenueEdgeByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [created] = await db
-      .insert(venueEdges)
-      .values({
+    return await db.transaction(async tx => {
+      if (input.fromVenueId === input.toVenueId) throw new OperationError(400, 'VALIDATION_ERROR', 'Connect two distinct places.');
+      const own = await tx.select({ id: venues.id }).from(venues).where(and(eq(venues.eventId, input.eventId), inArray(venues.id, [input.fromVenueId, input.toVenueId])));
+      if (own.length !== 2) throw new OperationError(400, 'VALIDATION_ERROR', 'Both places must belong to this event.');
+      const [created] = await tx
+        .insert(venueEdges)
+        .values({
+          eventId: input.eventId,
+          fromVenueId: input.fromVenueId,
+          toVenueId: input.toVenueId,
+          distanceMeters: input.distanceMeters,
+          accessible: input.accessible,
+          isCrossFloor: input.isCrossFloor,
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        fromVenueId: input.fromVenueId,
-        toVenueId: input.toVenueId,
-        distanceMeters: input.distanceMeters,
-        accessible: input.accessible,
-        isCrossFloor: input.isCrossFloor,
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'VENUE_EDGE_CREATED',
+        resourceType: 'VENUE_EDGE',
+        resourceId: String(created.id),
+        details: `Connected POI #${input.fromVenueId} ↔ POI #${input.toVenueId} (${input.distanceMeters}m · ${input.accessible ? 'Step-free' : 'Stairs'}).`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'VENUE_EDGE_CREATED',
-      resourceType: 'VENUE_EDGE',
-      resourceId: String(created.id),
-      details: `Connected POI #${input.fromVenueId} ↔ POI #${input.toVenueId} (${input.distanceMeters}m · ${input.accessible ? 'Step-free' : 'Stairs'}).`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error('Database query failed in createVenueEdgeByOrganiser:', error);
     throw new Error('Failed to create venue pathway connection.', {
@@ -2246,30 +2299,32 @@ export async function createResourceByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const [created] = await db
-      .insert(resources)
-      .values({
+    return await db.transaction(async tx => {
+      const [created] = await tx
+        .insert(resources)
+        .values({
+          eventId: input.eventId,
+          title: input.title,
+          description: input.description,
+          url: input.url,
+          category: input.category,
+          audience: input.audience,
+          isDemoSeed: false,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
         eventId: input.eventId,
-        title: input.title,
-        description: input.description,
-        url: input.url,
-        category: input.category,
-        audience: input.audience,
-        isDemoSeed: false,
-      })
-      .returning();
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'RESOURCE_PUBLISHED',
+        resourceType: 'RESOURCE',
+        resourceId: String(created.id),
+        details: `Published resource "${input.title}" (${input.audience}).`,
+      });
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'RESOURCE_PUBLISHED',
-      resourceType: 'RESOURCE',
-      resourceId: String(created.id),
-      details: `Published resource "${input.title}" (${input.audience}).`,
+      return created;
     });
-
-    return created;
   } catch (error) {
     console.error('Database query failed in createResourceByOrganiser:', error);
     throw new Error('Failed to create resource.', { cause: error });
@@ -2303,6 +2358,8 @@ export async function recordParticipantWaypointScan(input: {
       throw new Error('Invalid or unrecognized waypoint token.');
     }
 
+    const [event] = await db.select({ venuePublished: events.venuePublished }).from(events).where(eq(events.id, venue.eventId));
+    if (!event?.venuePublished) throw new OperationError(403, 'FORBIDDEN', 'This event venue is not published.');
     const appRows = await db
       .select()
       .from(applications)
@@ -2331,7 +2388,7 @@ export async function recordParticipantWaypointScan(input: {
 
     return {
       scan,
-      venue,
+      venue: { ...venue, waypointToken: '' },
     };
   } catch (error) {
     console.error(
@@ -2791,7 +2848,7 @@ export async function getUserJourneys(userId: number) {
 
       participating.push({
         event: ev,
-        application: app,
+        application: { ...app, reviewedByUserId: undefined },
         credential: credByAppId.get(app.id) || null,
         nextSession,
       });
@@ -2817,6 +2874,7 @@ export async function getUserJourneys(userId: number) {
 export async function createEventByUser(input: {
   userId: number;
   userEmail: string;
+  isDemoUser?: boolean;
   title: string;
   subtitle: string;
   eventType: string;
@@ -2857,7 +2915,7 @@ export async function createEventByUser(input: {
           name: input.organisationName,
           description: `Host organisation for ${input.title}`,
           headquarters: input.organisationHq || input.location,
-          isDemoSeed: false,
+          isDemoSeed: Boolean(input.isDemoUser),
         })
         .returning();
 
@@ -2896,7 +2954,7 @@ export async function createEventByUser(input: {
           venuePublished: true,
           status: 'LIVE',
           categories: JSON.stringify(categories),
-          isDemoSeed: false,
+          isDemoSeed: Boolean(input.isDemoUser),
         })
         .returning();
 
@@ -2952,52 +3010,60 @@ export async function updateEventConfigByOrganiser(input: {
   actorEmail: string;
 }) {
   try {
-    const updatePayload: Record<string, any> = {};
-    if (input.title !== undefined) updatePayload.title = input.title;
-    if (input.subtitle !== undefined) updatePayload.subtitle = input.subtitle;
-    if (input.eventType !== undefined) updatePayload.eventType = input.eventType;
-    if (input.startDate !== undefined) updatePayload.startDate = input.startDate;
-    if (input.endDate !== undefined) updatePayload.endDate = input.endDate;
-    if (input.description !== undefined)
-      updatePayload.description = input.description;
-    if (input.location !== undefined) updatePayload.location = input.location;
-    if (input.datesLabel !== undefined)
-      updatePayload.datesLabel = input.datesLabel;
-    if (input.timezone !== undefined) updatePayload.timezone = input.timezone;
-    if (input.expectedParticipants !== undefined)
-      updatePayload.expectedParticipants = input.expectedParticipants;
-    if (input.visibility !== undefined)
-      updatePayload.visibility = input.visibility;
-    if (input.applicationStatus !== undefined)
-      updatePayload.applicationStatus = input.applicationStatus;
-    if (input.applicationConfig !== undefined)
-      updatePayload.applicationConfig = JSON.stringify(input.applicationConfig);
-    if (input.venueName !== undefined) updatePayload.venueName = input.venueName;
-    if (input.venueAddress !== undefined)
-      updatePayload.venueAddress = input.venueAddress;
-    if (input.venuePublished !== undefined)
-      updatePayload.venuePublished = input.venuePublished;
-    if (input.status !== undefined) updatePayload.status = input.status;
-    if (input.categories !== undefined)
-      updatePayload.categories = JSON.stringify(input.categories);
+    return await db.transaction(async tx => {
+      const [existing] = await tx.select().from(events).where(eq(events.id, input.eventId)).for('update');
+      if (!existing) throw new OperationError(404, 'NOT_FOUND', 'Event not found.');
+      const start = input.startDate ?? existing.startDate;
+      const end = input.endDate ?? existing.endDate;
+      if (end < start) throw new OperationError(400, 'VALIDATION_ERROR', 'End date must not precede the start date.');
+      const updatePayload: Record<string, any> = {};
+      if (input.title !== undefined) updatePayload.title = input.title;
+      if (input.subtitle !== undefined) updatePayload.subtitle = input.subtitle;
+      if (input.eventType !== undefined) updatePayload.eventType = input.eventType;
+      if (input.startDate !== undefined) updatePayload.startDate = input.startDate;
+      if (input.endDate !== undefined) updatePayload.endDate = input.endDate;
+      if (input.description !== undefined)
+        updatePayload.description = input.description;
+      if (input.location !== undefined) updatePayload.location = input.location;
+      if (input.datesLabel !== undefined)
+        updatePayload.datesLabel = input.datesLabel;
+      if (input.timezone !== undefined) updatePayload.timezone = input.timezone;
+      if (input.expectedParticipants !== undefined)
+        updatePayload.expectedParticipants = input.expectedParticipants;
+      if (input.visibility !== undefined)
+        updatePayload.visibility = input.visibility;
+      if (input.applicationStatus !== undefined)
+        updatePayload.applicationStatus = input.applicationStatus;
+      if (input.applicationConfig !== undefined)
+        updatePayload.applicationConfig = JSON.stringify(input.applicationConfig);
+      if (input.venueName !== undefined) updatePayload.venueName = input.venueName;
+      if (input.venueAddress !== undefined)
+        updatePayload.venueAddress = input.venueAddress;
+      if (input.venuePublished !== undefined)
+        updatePayload.venuePublished = input.venuePublished;
+      if (input.status !== undefined) updatePayload.status = input.status;
+      if (input.categories !== undefined)
+        updatePayload.categories = JSON.stringify(input.categories);
 
-    const [updated] = await db
-      .update(events)
-      .set(updatePayload)
-      .where(eq(events.id, input.eventId))
-      .returning();
+      if (!Object.keys(updatePayload).length) throw new OperationError(400, 'VALIDATION_ERROR', 'Provide at least one supported setting.');
+      const [updated] = await tx
+        .update(events)
+        .set(updatePayload)
+        .where(eq(events.id, input.eventId))
+        .returning();
 
-    await db.insert(auditLogs).values({
-      eventId: input.eventId,
-      actorUserId: input.actorUserId,
-      actorEmail: input.actorEmail,
-      action: 'EVENT_CONFIG_UPDATED',
-      resourceType: 'EVENT',
-      resourceId: String(input.eventId),
-      details: `Updated event configuration (${Object.keys(updatePayload).join(', ')}).`,
+      await tx.insert(auditLogs).values({
+        eventId: input.eventId,
+        actorUserId: input.actorUserId,
+        actorEmail: input.actorEmail,
+        action: 'EVENT_CONFIG_UPDATED',
+        resourceType: 'EVENT',
+        resourceId: String(input.eventId),
+        details: `Updated event configuration (${Object.keys(updatePayload).join(', ')}).`,
+      });
+
+      return updated;
     });
-
-    return updated;
   } catch (error) {
     console.error('Database query failed in updateEventConfigByOrganiser:', error);
     throw new Error('Failed to update event settings.', { cause: error });

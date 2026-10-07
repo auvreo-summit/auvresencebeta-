@@ -94,6 +94,8 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
     string | null
   >(null);
 
+  const identityGeneration = useRef(0);
+  useEffect(() => { identityGeneration.current++; setHistory([]); setLoading(false); setAttachedImage(null); }, [user?.id, context?.event.id]);
   const dialogRef = useDialogFocus(isOpen, onClose);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -160,11 +162,11 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
   const submitQuestion = async (qText: string) => {
     const trimmed = qText.trim();
-    if (!trimmed || !context) return;
+    if (!trimmed || !context || loading) return;
 
     // Check if this is a consequential mutation request (e.g. moving a session to another place)
     const proposal = detectConsequentialVenueProposal(trimmed);
-    if (proposal) {
+    if (proposal && isOrganiserContext && context.isOrganiser) {
       setQuestionInput('');
       setHistory((prev) => [
         {
@@ -182,17 +184,12 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
       return;
     }
 
+    const generation = identityGeneration.current;
     setLoading(true);
     setQuestionInput('');
 
     try {
-      let tokenToUse = authToken;
-      if (!tokenToUse) {
-        tokenToUse = await onSignInAsParticipant();
-      }
-      if (!tokenToUse) {
-        throw new Error('Sign in required.');
-      }
+      const tokenToUse = authToken;
 
       // If an image is attached and vision is configured, route to /api/ai/vision
       if (attachedImage) {
@@ -202,7 +199,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenToUse}`,
+            ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {}),
           },
           body: JSON.stringify({
             eventId: context.event.id,
@@ -211,6 +208,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
           }),
         });
         const json = await res.json();
+        if (generation !== identityGeneration.current) return;
         if (!res.ok) {
           throw new Error(
             json.error || 'Image understanding is currently unavailable.'
@@ -236,22 +234,24 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokenToUse}`,
+          ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {}),
         },
         body: JSON.stringify({
           eventId: context.event.id,
           question: trimmed,
+          history: history.filter(m => m.answer).slice(0, 3).reverse().flatMap(m => [{ role: 'user', content: m.question }, { role: 'assistant', content: m.answer!.slice(0, 1500) }]),
         }),
+        signal: AbortSignal.timeout(45000),
       });
 
       const json = await res.json();
+      if (generation !== identityGeneration.current) return;
       if (!res.ok) {
         setHistory((prev) => [
           {
             id: String(Date.now()),
             question: trimmed,
-            error:
-              'Auvresence is temporarily unavailable. Your event information is still accessible.',
+            error: json.error || 'Auvresence is temporarily unavailable. Your event information is still accessible.',
             timestamp: new Date().toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -313,7 +313,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
         },
       ]);
     } finally {
-      setLoading(false);
+      if (generation === identityGeneration.current) setLoading(false);
     }
   };
 
@@ -326,9 +326,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
     try {
       let tokenToUse = authToken;
-      if (user?.activeRole !== 'ORGANISER' && onSwitchToOrganiserAccount) {
-        tokenToUse = await onSwitchToOrganiserAccount();
-      }
+      if (!context.isOrganiser) throw new Error('Organiser authorization required.');
       if (!tokenToUse) {
         throw new Error('Organiser authorization required.');
       }
@@ -346,7 +344,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenToUse}`,
+            ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {}),
           },
           body: JSON.stringify({
             title: targetSession.title,
@@ -446,7 +444,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenToUse}`,
+                ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {}),
               },
               body: JSON.stringify({
                 eventId: context.event.id,
@@ -813,13 +811,16 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
               value={questionInput}
               onChange={(e) => setQuestionInput(e.target.value)}
               placeholder="Ask about your event..."
-              className="flex-1 px-4 py-2.5 text-sm bg-[#0d0608] border border-[#cf9f5d]/35 text-[#faf6f0] placeholder:text-[#faf6f0]/40 focus:outline-none focus:border-[#cf9f5d]"
+              maxLength={500}
+              aria-label="Ask about your event"
+              className="min-w-0 flex-1 px-4 py-2.5 text-sm bg-[#0d0608] border border-[#cf9f5d]/35 text-[#faf6f0] placeholder:text-[#faf6f0]/40 focus:outline-none focus:border-[#cf9f5d]"
             />
 
             <button
               type="submit"
+              aria-label="Send"
               disabled={loading || !questionInput.trim()}
-              className="px-4 py-2.5 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="min-h-11 min-w-11 px-4 py-2.5 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
             </button>

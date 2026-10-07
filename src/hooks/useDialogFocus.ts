@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 /** Keep keyboard navigation within an open sheet and return focus on dismissal. */
-export function useDialogFocus(open: boolean, onClose: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
+export function useDialogFocus<T extends HTMLElement = HTMLDivElement>(open: boolean, onClose: () => void) {
+  const ref = useRef<T>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {

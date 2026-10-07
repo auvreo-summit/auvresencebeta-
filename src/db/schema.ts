@@ -113,7 +113,7 @@ export const venues = pgTable(
     eventId: integer('event_id')
       .references(() => events.id)
       .notNull(),
-    floorId: integer('floor_id'),
+    floorId: integer('floor_id').references(() => venueFloors.id),
     name: text('name').notNull(),
     shortDescription: text('short_description').notNull(),
     floor: text('floor').notNull(),

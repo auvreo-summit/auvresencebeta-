@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   signInWithPopup,
   signInWithRedirect,
+  getRedirectResult,
   signOut,
   onIdTokenChanged,
   type User as FirebaseUser,
@@ -88,6 +89,7 @@ function pathFor(surface: NavSurface, eventId: number | null): string {
       return '/create';
     case 'ORGANISE':
       return eventId ? `/studio/${eventId}` : '/';
+    case 'LIVE':
     case 'EXPERIENCE':
       return eventId ? `/event/${eventId}` : '/';
     default:
@@ -224,6 +226,7 @@ export default function App() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load journeys.');
+      if (t !== await getToken()) return;
       setJourneys(json);
     } catch (err: any) {
       setJourneysError(err.message || 'Could not load your journeys.');
@@ -245,6 +248,7 @@ export default function App() {
         });
         if (res.ok) {
           const data: EventFullContext = await res.json();
+          if (t !== await getToken()) return;
           setContext(data);
           setContextError(null);
         } else if (res.status === 404) {
@@ -322,6 +326,8 @@ export default function App() {
         throw new Error(j.error || `Profile sync failed (${res.status}).`);
       }
       const data = await res.json();
+      if (auth.currentUser?.uid !== fbUser.uid) return null;
+      if (signedUidRef.current && signedUidRef.current !== fbUser.uid) { setContext(null); setJourneys(null); }
       signedUidRef.current = fbUser.uid;
       authModeRef.current = 'FIREBASE';
       setAuthToken(idToken);
@@ -338,6 +344,8 @@ export default function App() {
   // the entrance never flashes the wrong state. NO identity is ever invented.
   useEffect(() => {
     let cancelled = false;
+    if (sessionStorage.getItem('auvresence-sign-in-intent') === 'ORGANISE') pendingIntentRef.current = 'ORGANISE';
+    void getRedirectResult(auth).catch((error) => { if (!cancelled) setAuthError(SIGN_IN_ERRORS[error?.code] || 'Google sign-in did not complete.'); });
     const unsub = onIdTokenChanged(auth, async (fbUser) => {
       if (cancelled) return;
       try {
@@ -363,6 +371,7 @@ export default function App() {
           initialRoute.current = { surface: 'ENTRY' };
           if (pendingIntentRef.current === 'ORGANISE') {
             pendingIntentRef.current = null;
+            sessionStorage.removeItem('auvresence-sign-in-intent');
             navigate('CREATE', { eventId: null });
           } else if (r.surface === 'ORGANISE') {
             await openStudio(r.eventId);
@@ -385,7 +394,8 @@ export default function App() {
           // Signed out: protected deep links fall back to the entrance
           const r = initialRoute.current;
           initialRoute.current = { surface: 'ENTRY' };
-          if (r.surface === 'EXPLORE') navigate('EXPLORE', { eventId: null, replace: true });
+          if (r.surface === 'EXPERIENCE') await openEventSpace(r.eventId, 'DISCOVERY');
+          else if (r.surface === 'EXPLORE') navigate('EXPLORE', { eventId: null, replace: true });
           else if (window.location.pathname !== '/' && !/^\/(verify|waypoint)\//.test(window.location.pathname) && r.surface !== 'ENTRY') {
             navigate('ENTRY', { eventId: null, replace: true });
           }
@@ -393,7 +403,7 @@ export default function App() {
       } catch (err: any) {
         console.error('Error syncing Firebase user:', err);
         setAuthError(
-          'You are signed in with Google, but Auvresence could not load your profile. Please try again in a moment.'
+          err.message || 'You are signed in with Google, but your profile could not be loaded. Please retry.'
         );
       } finally {
         if (!cancelled) setAuthReady(true);
@@ -449,6 +459,12 @@ export default function App() {
       setSigningIn(true);
       pendingIntentRef.current = intent ?? null;
       try {
+        if (auth.currentUser) {
+          const token = await syncFirebaseUser(auth.currentUser);
+          await fetchJourneys(token);
+          if (intent === 'ORGANISE') { pendingIntentRef.current = null; navigate('CREATE', { eventId: null }); }
+          return token;
+        }
         const cred = await signInWithPopup(auth, googleAuthProvider);
         return await cred.user.getIdToken();
       } catch (err: any) {
@@ -463,6 +479,7 @@ export default function App() {
         if (code === 'auth/popup-blocked') {
           try {
             pendingIntentRef.current = intent ?? null;
+            if (intent) sessionStorage.setItem('auvresence-sign-in-intent', intent);
             await signInWithRedirect(auth, googleAuthProvider);
             return null;
           } catch (e: any) {
@@ -507,10 +524,11 @@ export default function App() {
   const handleSignOut = useCallback(async () => {
     try {
       await signOut(auth);
+      resetToSignedOut();
     } catch (err) {
       console.error('Sign-out failed:', err);
+      setAuthError('Sign-out did not complete. Please try again.');
     }
-    resetToSignedOut();
   }, [resetToSignedOut]);
 
   // ---- Judge-only identity switching (explicit, labelled, reversible) ----
@@ -524,6 +542,8 @@ export default function App() {
         });
         const json = await res.json();
         if (res.ok && json.token) {
+          setContext(null);
+          setJourneys(null);
           showcaseTokenRef.current = json.token;
           authModeRef.current = account;
           setAuthToken(json.token);
@@ -669,8 +689,8 @@ export default function App() {
       <VerificationView
         token={routeVerifyToken}
         onBackToApp={() => {
-          window.history.pushState({}, '', '/');
           setRouteVerifyToken(null);
+          navigate('ENTRY', { eventId: null });
         }}
       />
     );
@@ -711,6 +731,8 @@ export default function App() {
     return (
       <EntryCanvas
         user={user}
+        getToken={getToken}
+        aiConfigured={health?.aiConfigured}
         photoURL={photoURL}
         journeys={journeys}
         journeysLoading={journeysLoading}
@@ -855,7 +877,7 @@ export default function App() {
               SHOWCASE IDENTITY · EXIT
             </button>
           )}
-          {inEvent && user && (
+          {inEvent && context && (
             <button
               type="button"
               onClick={() => handleOpenAskAuvresence()}
@@ -1009,7 +1031,7 @@ export default function App() {
             />
           )}
 
-        {activeSurface === 'SECURITY' && (
+        {activeSurface === 'SECURITY' && health?.debugToolsEnabled === true && (
           <SecurityInspectorView
             onRestoreUserSession={async () => {
               if (authMode === 'ORGANISER_B') await activateShowcaseAccount('ORGANISER_B');
@@ -1018,7 +1040,7 @@ export default function App() {
           />
         )}
 
-        {activeSurface === 'ARCHITECTURE' && (
+        {activeSurface === 'ARCHITECTURE' && health?.debugToolsEnabled === true && (
           <ArchitectureView
             onNavigateTab={(tab) => navigate(tab as NavSurface)}
             onOpenAskAuvresence={handleOpenAskAuvresence}
@@ -1072,7 +1094,7 @@ export default function App() {
       )}
 
       {/* Ask Auvresence assists from INSIDE the product — never the entrance */}
-      {inEvent && user && (
+      {inEvent && context && (
         <AskAuvresenceDrawer
           isOpen={askDrawerOpen}
           initialQuestion={askInitialQuestion}
@@ -1120,7 +1142,7 @@ export default function App() {
             )}
           </div>
 
-          {health?.showcaseMode === true && (
+          {health?.debugToolsEnabled === true && (
             <button
               type="button"
               onClick={() => setJudgeModeOpen((prev) => !prev)}

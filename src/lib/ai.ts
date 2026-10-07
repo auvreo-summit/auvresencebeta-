@@ -2,12 +2,15 @@ import {
   AiNotConfiguredError,
   VisionNotConfiguredError,
   VoiceNotConfiguredError,
+  buildParticipantQuestionPrompts,
   buildDeterministicFallbackBriefing,
   isAiConfigured,
   isSttConfigured,
   isTtsConfigured,
   isVisionConfigured,
   isVoiceConfigured,
+  type AuthorisedAiInput,
+  type AiResponse,
   type AiAnswerResult,
   type AiBriefingResult,
   type AuthorisedParticipantAIContext,
@@ -31,7 +34,7 @@ const ttsProvider: TextToSpeechProvider = new GroqTextToSpeechProvider();
 const visionProvider: VisionProvider = new HuggingFaceVisionProvider();
 
 function resolveActiveTextProvider(): TextAiProvider {
-  const provider = process.env.AI_PROVIDER?.trim().toLowerCase();
+  const provider = (process.env.AI_PROVIDER || 'unorouter').trim().toLowerCase();
   if (provider === 'unorouter') {
     return unoRouterProvider;
   }
@@ -60,7 +63,9 @@ export async function generateAskAuvresenceResponse(
   question: string,
   context: AuthorisedParticipantAIContext
 ): Promise<AiAnswerResult> {
-  return resolveActiveTextProvider().answerParticipantQuestion(question, context);
+  const { systemInstruction, prompt } = buildParticipantQuestionPrompts(question, context);
+  const result = await generatePlatformResponse({ systemInstruction, prompt, maxTokens: 320 });
+  return { answer: result.text, provider: result.provider, model: result.model, contextTimestamp: new Date().toISOString() };
 }
 
 export async function generateParticipantBriefing(
@@ -88,4 +93,21 @@ export async function analyseParticipantEventImage(input: {
   context: AuthorisedParticipantAIContext;
 }): Promise<{ answer: string }> {
   return visionProvider.analyse(input);
+}
+
+/** Each provider uses its own server-only credentials. Fallback is explicit. */
+export async function generatePlatformResponse(input: AuthorisedAiInput): Promise<AiResponse> {
+  try { return await resolveActiveTextProvider().chat(input); }
+  catch (primaryError) {
+    const fallback = process.env.AI_FALLBACK_PROVIDER?.trim().toLowerCase();
+    const primary = (process.env.AI_PROVIDER || 'unorouter').trim().toLowerCase();
+    if (!fallback || fallback === primary) throw primaryError;
+    if (fallback === 'gemini' && process.env.GEMINI_API_KEY) {
+      return await new GeminiAiProvider('gemini', process.env.AI_FALLBACK_PROVIDER_MODEL || 'gemini-2.5-flash').chat(input);
+    }
+    if (fallback === 'unorouter' && process.env.UNOROUTER_API_KEY) {
+      return await new UnoRouterTextProvider('unorouter', process.env.AI_FALLBACK_PROVIDER_MODEL || 'gpt-oss-20b:free').chat(input);
+    }
+    throw primaryError;
+  }
 }

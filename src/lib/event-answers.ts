@@ -3,6 +3,9 @@ import type { AuthorisedParticipantAIContext } from './ai-provider.ts';
 /** Answers only from the server-authorised event snapshot; ambiguity goes to AI. */
 export function answerEventQuestion(question: string, context: AuthorisedParticipantAIContext): string | null {
   const q = question.toLowerCase().replace(/[’]/g, "'");
+  if (/\b(credential|my pass|my ticket)\b/.test(q)) {
+    return context.credentialStatus === 'ACTIVE' && context.applicationStatus === 'ACCEPTED' ? 'Your event credential is active. Open My Credential to view your pass and verification link.' : `No active credential is available. Your application status is ${context.applicationStatus.replaceAll('_', ' ').toLowerCase()}.`;
+  }
   const location = (s: NonNullable<typeof context.upNext>) => s.venueName ? `${s.venueName}${s.venueFloor ? ` · ${s.venueFloor}` : ''}` : 'Location to be announced';
   if (/\b(next|where do i go)\b/.test(q) && !/\b(move|change|plan)\b/.test(q)) {
     const s = context.upNext;
@@ -14,7 +17,8 @@ export function answerEventQuestion(question: string, context: AuthorisedPartici
   }
   if (/\b(what changed|what has changed|recent updates)\b/.test(q)) {
     const changed = context.schedule.filter(s => s.lastUpdatedNote);
-    return changed.length ? changed.map(s => `${s.title}: ${s.lastUpdatedNote}`).join('\n') : 'No programme changes have been published.';
+    const updates = [...changed.map(s => `${s.title}: ${s.lastUpdatedNote}`), ...context.announcements.slice(0, 3).map(a => `${a.title}: ${a.body}`)];
+    return updates.length ? updates.join('\n') : 'No programme changes have been published.';
   }
   const types = /\b(food|eat|dining|cafe)\b/.test(q) ? ['FOOD','CAFE'] : /\b(washroom|toilet|restroom)\b/.test(q) ? ['WASHROOM'] : /\b(medical|first aid)\b/.test(q) ? ['MEDICAL'] : /\b(lift|elevator)\b/.test(q) ? ['LIFT'] : null;
   if (types && /\b(where|find|show|nearest)\b/.test(q)) {

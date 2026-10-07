@@ -10,7 +10,7 @@ const admin = new Pool({connectionString:uri.toString()});
 const name='auv_schema_test_'+crypto.randomBytes(6).toString('hex');
 await admin.query(`CREATE DATABASE ${name}`);
 uri.pathname='/'+name;
-const env={...process.env,DATABASE_URL:uri.toString(),NODE_ENV:'production',PORT:'3001',SHOWCASE_MODE:'true'};
+const env={...process.env,DATABASE_URL:uri.toString(),NODE_ENV:'production',PORT:'3001',SHOWCASE_MODE:'true',ENABLE_DEMO_IDENTITIES:'true'};
 let worker;const target=new Pool({connectionString:uri.toString()});
 const base='http://127.0.0.1:3001';
 async function runMigration(){const child=spawn(process.execPath,['node_modules/drizzle-kit/bin.cjs','push','--config','src/db/drizzle.config.ts','--force'],{env,stdio:['ignore','pipe','pipe']});let output='';child.stdout.on('data',d=>output+=d);child.stderr.on('data',d=>output+=d);const [code]=await once(child,'exit');if(code!==0)throw new Error('Migration failed: '+output);}

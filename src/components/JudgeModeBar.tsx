@@ -10,6 +10,8 @@ export interface SystemHealthStatus {
   ttsConfigured?: boolean;
   visionConfigured?: boolean;
   showcaseMode: boolean;
+  debugToolsEnabled?: boolean;
+  demoIdentitiesEnabled?: boolean;
 }
 
 export const DEMO_STEPS = [
@@ -56,7 +58,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
   onOpenLastXRay,
 }) => {
   if (!isOpen) return null;
-  if (health && !health.showcaseMode) {
+  if (!health?.debugToolsEnabled) {
     return null;
   }
 
@@ -85,7 +87,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
                 health?.aiConfigured ? 'text-emerald-300' : 'text-[#edd2ab]/75'
               }
             >
-              {health?.aiConfigured ? 'AI ✓' : 'AI OPTIONAL'}
+              {health?.aiConfigured ? 'AI ✓' : 'AI UNAVAILABLE'}
             </span>
           </div>
 

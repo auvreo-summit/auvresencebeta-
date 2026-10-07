@@ -235,10 +235,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
             v.id ===
             context.waypointTrail[context.waypointTrail.length - 1].venueId
         )
-      : null) ||
-    context.venues.find((v) => v.poiType === 'REGISTRATION') ||
-    currentVenue ||
-    null;
+      : null) || null;
 
   const originVenue =
     context.venues.find((v) => v.id === fromVenueIdOverride) ||
@@ -467,7 +464,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
             <button
               type="button"
               onClick={() => handleWaypointCheckIn(nextDest)}
-              disabled={scanningWaypoint}
+              disabled={scanningWaypoint || context.myApplication?.status !== 'ACCEPTED'}
               className="px-5 py-3 text-xs font-medium border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] transition-colors cursor-pointer whitespace-nowrap"
             >
               Check in
@@ -870,6 +867,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                 </p>
               </div>
 
+              {!originVenue && <div className="border-y border-[#cf9f5d]/20 py-6 space-y-3"><p className="text-sm text-[#edd2ab]">Choose a starting place to view a route. Your current location is not tracked.</p><label className="block text-xs text-[#edd2ab]">Route starting place<select aria-label="Route starting place" value="" onChange={e => setFromVenueIdOverride(Number(e.target.value))} className="auv-input mt-2"><option value="">Choose a place</option>{context.venues.map(v => <option key={v.id} value={v.id}>{v.name} ({v.floor})</option>)}</select></label></div>}
               {activeRoute?.unreachable && (
                 <div
                   role="status"
@@ -946,7 +944,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                 </div>
               )}
 
-              <div className="bg-[#faf6f0] p-5 flex items-center gap-5 max-w-sm">
+              {context.isOrganiser && activeVenue.waypointToken && <div className="bg-[#faf6f0] p-5 flex items-center gap-5 max-w-sm">
                 <QRCodeSVG
                   value={`${window.location.origin}/waypoint/${activeVenue.waypointToken}`}
                   size={84}
@@ -959,15 +957,15 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                     {activeVenue.name}
                   </p>
                   <p className="text-[11px] text-[#0d0608]/75 leading-snug">
-                    Room entrance check-in code.
+                    Organiser check-in code. Print this at the entrance.
                   </p>
                 </div>
-              </div>
+              </div>}
 
               <button
                 type="button"
                 onClick={() => handleWaypointCheckIn(activeVenue)}
-                disabled={scanningWaypoint}
+                disabled={scanningWaypoint || context.myApplication?.status !== 'ACCEPTED'}
                 className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Navigation className="w-3.5 h-3.5" />

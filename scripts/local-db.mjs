@@ -16,7 +16,7 @@ mkdirSync(local, { recursive: true, mode: 0o700 });
 const settingsPath = path.join(local, 'database.json');
 const settings = existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, 'utf8')) : { user: 'auvresence', password: randomBytes(24).toString('hex'), port: 5432 };
 if (!existsSync(settingsPath)) writeFileSync(settingsPath, JSON.stringify(settings), { mode: 0o600 });
-if (!existsSync(envPath)) writeFileSync(envPath, `${marker}\nDATABASE_URL=postgresql://${settings.user}:${settings.password}@127.0.0.1:${settings.port}/auvresence\nSQL_HOST=127.0.0.1\nSQL_DB_NAME=auvresence\nSQL_USER=${settings.user}\nSQL_PASSWORD=${settings.password}\nSQL_ADMIN_USER=${settings.user}\nSQL_ADMIN_PASSWORD=${settings.password}\nSHOWCASE_MODE=true\n`, { mode: 0o600 });
+if (!existsSync(envPath)) writeFileSync(envPath, `${marker}\nDATABASE_URL=postgresql://${settings.user}:${settings.password}@127.0.0.1:${settings.port}/auvresence\nSQL_HOST=127.0.0.1\nSQL_DB_NAME=auvresence\nSQL_USER=${settings.user}\nSQL_PASSWORD=${settings.password}\nSQL_ADMIN_USER=${settings.user}\nSQL_ADMIN_PASSWORD=${settings.password}\nSHOWCASE_MODE=true\nENABLE_DEMO_IDENTITIES=false\nSHOWCASE_DEBUG=false\n`, { mode: 0o600 });
 const pg = new EmbeddedPostgres({ databaseDir: path.join(local, 'postgres'), ...settings, persistent: true, postgresFlags: ['-h', '127.0.0.1'], onLog: () => {}, onError: console.error });
 if (!existsSync(path.join(local, 'postgres', 'PG_VERSION'))) await pg.initialise();
 await pg.start();
