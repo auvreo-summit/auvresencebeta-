@@ -271,15 +271,15 @@ export const SecurityInspectorView: React.FC<{
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-10 space-y-10">
       {/* HEADER */}
-      <div className="border-b border-[#cf9f5d]/20 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div className="border-b border-[#E6C887]/20 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div className="space-y-1.5">
-          <p className="text-xs font-mono text-[#cf9f5d]">
+          <p className="text-xs font-mono text-[#E6C887]">
             AUVRESENCE SECURITY ARCHITECTURE · LIVE VERIFICATION SUITE
           </p>
-          <h1 className="text-3xl sm:text-4xl font-display font-semibold text-[#faf6f0]">
+          <h1 className="text-3xl sm:text-4xl font-display font-semibold text-[#FCFAF7]">
             Security Inspector
           </h1>
-          <p className="text-sm text-[#faf6f0]/75 max-w-2xl">
+          <p className="text-sm text-[#FCFAF7]/75 max-w-2xl">
             Executes real HTTP requests against the Express API and PostgreSQL
             database to verify Identity, Role Authorization, Resource Isolation
             (BOLA defense), Zod Input Validation, and Credential Privacy.
@@ -289,7 +289,7 @@ export const SecurityInspectorView: React.FC<{
         <button
           onClick={runLiveSecuritySuite}
           disabled={runningAll}
-          className="px-6 py-3 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap disabled:opacity-50"
+          className="px-6 py-3 text-xs font-semibold bg-[#E6C887] text-[#080203] hover:bg-[#E6C887] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap disabled:opacity-50"
         >
           {runningAll ? (
             <>
@@ -306,10 +306,10 @@ export const SecurityInspectorView: React.FC<{
       </div>
 
       {/* SUMMARY MATRIX */}
-      <div className="border border-[#cf9f5d]/30 bg-[#1a0206] p-6 grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="sm:col-span-2 lg:col-span-1 border-b sm:border-b-0 sm:border-r border-[#cf9f5d]/20 pb-4 sm:pb-0 sm:pr-4">
-          <p className="text-xs font-mono text-[#cf9f5d]">AUVRESENCE SECURITY</p>
-          <p className="text-2xl font-mono font-semibold text-[#faf6f0] mt-1 tabular-nums">
+      <div className="border border-[#E6C887]/30 bg-[#120608] p-6 grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="sm:col-span-2 lg:col-span-1 border-b sm:border-b-0 sm:border-r border-[#E6C887]/20 pb-4 sm:pb-0 sm:pr-4">
+          <p className="text-xs font-mono text-[#E6C887]">AUVRESENCE SECURITY</p>
+          <p className="text-2xl font-mono font-semibold text-[#FCFAF7] mt-1 tabular-nums">
             {passCount} / {checks.length} PASS
           </p>
           {failCount > 0 && (
@@ -327,14 +327,14 @@ export const SecurityInspectorView: React.FC<{
           { label: 'Credential Privacy', check: checks[5] },
         ].map((item) => (
           <div key={item.label} className="flex flex-col justify-between">
-            <span className="text-xs text-[#edd2ab]/80">{item.label}</span>
+            <span className="text-xs text-[#E6C887]/80">{item.label}</span>
             <span
               className={`font-mono text-sm font-semibold mt-1 ${
                 item.check.status === 'PASS'
                   ? 'text-emerald-300'
                   : item.check.status === 'FAIL'
                   ? 'text-red-400'
-                  : 'text-[#faf6f0]/50'
+                  : 'text-[#FCFAF7]/50'
               }`}
             >
               {item.check.status === 'IDLE'
@@ -354,18 +354,18 @@ export const SecurityInspectorView: React.FC<{
             key={c.id}
             className={`border p-6 space-y-4 ${
               c.status === 'PASS'
-                ? 'border-emerald-500/40 bg-[#1a0206]'
+                ? 'border-emerald-500/40 bg-[#120608]'
                 : c.status === 'FAIL'
                 ? 'border-red-500/50 bg-red-950/20'
-                : 'border-[#cf9f5d]/25 bg-[#1a0206]'
+                : 'border-[#E6C887]/25 bg-[#120608]'
             }`}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[#cf9f5d]/20 pb-3">
+            <div className="flex items-start justify-between gap-4 border-b border-[#E6C887]/20 pb-3">
               <div>
-                <p className="text-xs font-mono text-[#cf9f5d]">
+                <p className="text-xs font-mono text-[#E6C887]">
                   CHECK 0{idx + 1} · {c.layer}
                 </p>
-                <h3 className="text-lg font-display font-semibold text-[#faf6f0] mt-0.5">
+                <h3 className="text-lg font-display font-semibold text-[#FCFAF7] mt-0.5">
                   {c.title}
                 </h3>
               </div>
@@ -376,7 +376,7 @@ export const SecurityInspectorView: React.FC<{
                     ? 'text-emerald-300'
                     : c.status === 'FAIL'
                     ? 'text-red-400'
-                    : 'text-[#edd2ab]/60'
+                    : 'text-[#E6C887]/60'
                 }`}
               >
                 {c.status === 'PASS' ? (
@@ -395,12 +395,12 @@ export const SecurityInspectorView: React.FC<{
               </span>
             </div>
 
-            <p className="text-xs text-[#faf6f0]/80 leading-relaxed">
+            <p className="text-xs text-[#FCFAF7]/80 leading-relaxed">
               {c.description}
             </p>
 
-            <div className="p-3 bg-[#0d0608] border border-[#cf9f5d]/20 font-mono text-xs space-y-1.5">
-              <div className="flex items-center justify-between text-[#edd2ab]">
+            <div className="p-3 bg-[#080203] border border-[#E6C887]/20 font-mono text-xs space-y-1.5">
+              <div className="flex items-center justify-between text-[#E6C887]">
                 <span>
                   {c.httpMethod} {c.endpoint}
                 </span>
@@ -408,14 +408,14 @@ export const SecurityInspectorView: React.FC<{
               </div>
 
               {c.httpStatus !== undefined && (
-                <div className="pt-1.5 border-t border-[#cf9f5d]/15 flex items-center justify-between text-[11px] text-[#faf6f0]/70 tabular-nums">
+                <div className="pt-1.5 border-t border-[#E6C887]/15 flex items-center justify-between text-[11px] text-[#FCFAF7]/70 tabular-nums">
                   <span>Actual HTTP Status: {c.httpStatus}</span>
                   <span>Latency: {c.latencyMs} ms</span>
                 </div>
               )}
 
               {c.responsePreview && (
-                <pre className="pt-1.5 text-[11px] text-[#cf9f5d] overflow-x-auto whitespace-pre-wrap break-all">
+                <pre className="pt-1.5 text-[11px] text-[#E6C887] overflow-x-auto whitespace-pre-wrap break-all">
                   {c.responsePreview}
                 </pre>
               )}
@@ -425,12 +425,12 @@ export const SecurityInspectorView: React.FC<{
       </div>
 
       {/* 7-LAYER SECURITY ARCHITECTURE EXPLANATION */}
-      <div className="border border-[#cf9f5d]/25 bg-[#1a0206] p-8 space-y-6">
-        <div className="border-b border-[#cf9f5d]/20 pb-4">
-          <p className="text-xs font-mono text-[#cf9f5d]">
+      <div className="border border-[#E6C887]/25 bg-[#120608] p-8 space-y-6">
+        <div className="border-b border-[#E6C887]/20 pb-4">
+          <p className="text-xs font-mono text-[#E6C887]">
             DEFENSIBLE ENGINEERING CONTROLS
           </p>
-          <h2 className="text-2xl font-display font-semibold text-[#faf6f0] mt-1">
+          <h2 className="text-2xl font-display font-semibold text-[#FCFAF7] mt-1">
             Seven-Layer Server-Enforced Security Model
           </h2>
         </div>
@@ -468,12 +468,12 @@ export const SecurityInspectorView: React.FC<{
           ].map((item) => (
             <div
               key={item.layer}
-              className="p-4 bg-[#0d0608] border border-[#cf9f5d]/20 space-y-1.5"
+              className="p-4 bg-[#080203] border border-[#E6C887]/20 space-y-1.5"
             >
-              <p className="font-mono text-[#cf9f5d] font-semibold">
+              <p className="font-mono text-[#E6C887] font-semibold">
                 {item.layer}
               </p>
-              <p className="text-[#faf6f0]/75 leading-relaxed">{item.desc}</p>
+              <p className="text-[#FCFAF7]/75 leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>

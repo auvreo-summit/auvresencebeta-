@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import type { EventFullContext } from '../types.ts';
 
-const field = 'w-full min-w-0 mt-2 px-4 py-3 bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] focus:border-[#cf9f5d] outline-none';
-const label = 'block text-xs text-[#edd2ab]';
+const field = 'w-full min-w-0 mt-2 px-4 py-3 bg-[#120608] border border-[#E6C887]/30 text-[#FCFAF7] focus:border-[#E6C887] outline-none';
+const label = 'block text-xs text-[#E6C887]';
 interface Props { context: EventFullContext; token: string | null; onSaved: () => Promise<void> }
 async function write(path: string, token: string | null, body: unknown, method = 'POST') {
   if (!token) throw new Error('Please sign in again.');
@@ -18,8 +18,8 @@ export function SessionComposer({ context, token, onSaved }: Props) {
   const [notice, setNotice] = useState('');
   return <div>
     <button type="button" className="auv-btn auv-btn-secondary" onClick={() => setOpen(!open)}>{open ? 'Close new session' : 'Add session'}</button>
-    {notice && <p role="status" className="mt-4 text-sm text-[#edd2ab]">{notice}</p>}
-    {open && <form aria-label="New session" className="mt-6 grid sm:grid-cols-2 gap-5 border-y border-[#cf9f5d]/20 py-6" onSubmit={async e => {
+    {notice && <p role="status" className="mt-4 text-sm text-[#E6C887]">{notice}</p>}
+    {open && <form aria-label="New session" className="mt-6 grid sm:grid-cols-2 gap-5 border-y border-[#E6C887]/20 py-6" onSubmit={async e => {
       e.preventDefault(); const form = e.currentTarget; const data = new FormData(form); setBusy(true); setNotice('');
       try {
         await write(`/api/organiser/events/${context.event.id}/sessions`, token, { title: data.get('title'), description: data.get('description'), speaker: data.get('speaker'), startTime: data.get('startTime'), endTime: data.get('endTime'), dayLabel: data.get('dayLabel'), track: data.get('track'), venueId: data.get('venueId') ? Number(data.get('venueId')) : null, status: 'UPCOMING' });
@@ -35,7 +35,7 @@ export function SessionComposer({ context, token, onSaved }: Props) {
       <label className={label}>Track<input name="track" defaultValue="General" required minLength={2} maxLength={100} className={field} /></label>
       <label className={label}>Place<select name="venueId" className={field}><option value="">Not assigned yet</option>{context.venues.map(v => <option key={v.id} value={v.id}>{v.name} · {v.floor}</option>)}</select></label>
       <div className="flex items-end"><button className="auv-btn auv-btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save session'}</button></div>
-      <p className="text-xs text-[#faf6f0]/60 sm:col-span-2">Times use {context.event.timezone}. Live status is set by the organiser. Session deletion is not available.</p>
+      <p className="text-xs text-[#FCFAF7]/60 sm:col-span-2">Times use {context.event.timezone}. Live status is set by the organiser. Session deletion is not available.</p>
     </form>}
   </div>;
 }
@@ -43,7 +43,7 @@ export function SessionComposer({ context, token, onSaved }: Props) {
 export function StudioSettings({ context, token, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
-  return <section><p className="text-xs font-mono tracking-widest text-[#cf9f5d]">SETTINGS</p><h2 className="font-display text-3xl mt-4">Your event, configured.</h2>
+  return <section><p className="text-xs font-mono tracking-widest text-[#E6C887]">SETTINGS</p><h2 className="font-display text-3xl mt-4">Your event, configured.</h2>
     <form className="mt-8 grid sm:grid-cols-2 gap-5" aria-label="Event settings" onSubmit={async e => {
       e.preventDefault(); const data = new FormData(e.currentTarget); setBusy(true); setNotice('');
       try { await write(`/api/organiser/events/${context.event.id}/config`, token, { title: data.get('title'), location: data.get('location'), visibility: data.get('visibility'), applicationStatus: data.get('applicationStatus'), status: data.get('status'), categories: String(data.get('categories')).split(',').map(c => c.trim()).filter(Boolean), venuePublished: data.get('venuePublished') === 'on' }, 'PATCH'); await onSaved(); setNotice('Settings saved.'); }
@@ -55,22 +55,22 @@ export function StudioSettings({ context, token, onSaved }: Props) {
       <label className={label}>Applications<select name="applicationStatus" defaultValue={context.event.applicationStatus} className={field}><option>OPEN</option><option>CLOSED</option><option>COMING_SOON</option></select></label>
       <label className={label}>Event status<select name="status" defaultValue={context.event.status} className={field}>{['DRAFT','PUBLISHED','LIVE','ARCHIVED'].map(s => <option key={s}>{s}</option>)}</select></label>
       <label className={label}>Application categories (comma separated)<input name="categories" defaultValue={context.event.categories.join(', ')} className={field} /></label>
-      <label className="text-sm text-[#edd2ab] flex items-center gap-3"><input type="checkbox" name="venuePublished" defaultChecked={context.event.venuePublished} />Publish venue to accepted participants</label>
+      <label className="text-sm text-[#E6C887] flex items-center gap-3"><input type="checkbox" name="venuePublished" defaultChecked={context.event.venuePublished} />Publish venue to accepted participants</label>
       <button disabled={busy} className="auv-btn auv-btn-primary justify-self-start">{busy ? 'Saving…' : 'Save settings'}</button>
-    </form>{notice && <p className="mt-5 text-sm text-[#edd2ab]" role="status">{notice}</p>}
+    </form>{notice && <p className="mt-5 text-sm text-[#E6C887]" role="status">{notice}</p>}
   </section>;
 }
 
 export function AutomationsPrototype() {
   const [days, setDays] = useState(2);
-  return <section><p className="text-xs font-mono tracking-widest text-[#cf9f5d]">AUVRESENCE AUTOMATIONS · COMING SOON</p><h2 className="font-display text-3xl mt-4">A thoughtful welcome.</h2>
-    <p className="mt-5 text-[#edd2ab]">PROTOTYPE · No emails are currently sent.</p>
-    <ol className="mt-8 divide-y divide-[#cf9f5d]/20 border-y border-[#cf9f5d]/20">
-      <li className="py-6"><span className="text-xs text-[#cf9f5d]">TRIGGER</span><p className="mt-2">Application accepted</p></li>
-      <li className="py-6"><span className="text-xs text-[#cf9f5d]">ACTION · CONCEPT</span><p className="mt-2">Acceptance Email</p></li>
+  return <section><p className="text-xs font-mono tracking-widest text-[#E6C887]">AUVRESENCE AUTOMATIONS · COMING SOON</p><h2 className="font-display text-3xl mt-4">A thoughtful welcome.</h2>
+    <p className="mt-5 text-[#E6C887]">PROTOTYPE · No emails are currently sent.</p>
+    <ol className="mt-8 divide-y divide-[#E6C887]/20 border-y border-[#E6C887]/20">
+      <li className="py-6"><span className="text-xs text-[#E6C887]">TRIGGER</span><p className="mt-2">Application accepted</p></li>
+      <li className="py-6"><span className="text-xs text-[#E6C887]">ACTION · CONCEPT</span><p className="mt-2">Acceptance Email</p></li>
       <li className="py-6"><label className={label}>WAIT · LOCAL PREVIEW ONLY<input aria-label="Prototype wait days" type="number" min={1} max={30} value={days} onChange={e => setDays(Math.max(1, Math.min(30, Number(e.target.value) || 1)))} className={field + ' max-w-28'} /> days</label></li>
-      <li className="py-6"><span className="text-xs text-[#cf9f5d]">ACTION · CONCEPT</span><p className="mt-2">Preparation Guide</p></li>
-    </ol><p className="mt-5 text-xs text-[#faf6f0]/60">Changes only preview this concept in this screen. No workflow is saved or scheduled.</p>
+      <li className="py-6"><span className="text-xs text-[#E6C887]">ACTION · CONCEPT</span><p className="mt-2">Preparation Guide</p></li>
+    </ol><p className="mt-5 text-xs text-[#FCFAF7]/60">Changes only preview this concept in this screen. No workflow is saved or scheduled.</p>
     <button type="button" disabled className="auv-btn auv-btn-secondary mt-6 opacity-50">Enable automation · Coming soon</button>
   </section>;
 }

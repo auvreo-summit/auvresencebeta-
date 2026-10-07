@@ -717,9 +717,9 @@ export default function App() {
     return (
       <div
         data-testid="auth-restoring"
-        className="min-h-screen bg-[#0d0608] flex items-center justify-center"
+        className="min-h-screen bg-[#080203] flex items-center justify-center"
       >
-        <span className="font-display text-sm tracking-[0.34em] text-[#edd2ab]/70 animate-pulse">
+        <span className="font-display text-sm tracking-[0.34em] text-[#E6C887]/70 animate-pulse">
           AUVRESENCE
         </span>
       </div>
@@ -768,8 +768,8 @@ export default function App() {
   const navBtn = (active: boolean) =>
     `py-1 transition-colors cursor-pointer whitespace-nowrap ${
       active
-        ? 'text-[#cf9f5d] border-b border-[#cf9f5d] font-semibold'
-        : 'text-[#faf6f0]/65 hover:text-[#faf6f0]'
+        ? 'text-[#E6C887] border-b border-[#E6C887] font-semibold'
+        : 'text-[#FCFAF7]/65 hover:text-[#FCFAF7]'
     }`;
 
   const eventGate = (children: React.ReactNode) => {
@@ -780,7 +780,7 @@ export default function App() {
           <button
             type="button"
             onClick={goHome}
-            className="text-xs tracking-[0.22em] uppercase text-[#edd2ab] border-b border-[#cf9f5d]/60 pb-1 cursor-pointer"
+            className="text-xs tracking-[0.22em] uppercase text-[#E6C887] border-b border-[#E6C887]/60 pb-1 cursor-pointer"
           >
             Back to Home
           </button>
@@ -801,12 +801,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0608] text-[#faf6f0] flex flex-col justify-between">
-      <header className="sticky top-0 z-40 bg-[#0d0608]/90 backdrop-blur-xs border-b border-[#cf9f5d]/15 px-6 py-4 flex items-center justify-between gap-4">
+    <div className="auv-app auv-atmosphere min-h-screen text-[#FCFAF7] flex flex-col justify-between">
+      <header className="auv-app-header sticky top-0 z-40 bg-[#080203]/90 backdrop-blur-xs border-b border-[#E6C887]/15 px-6 py-4 flex items-center justify-between gap-4">
         <button
           type="button"
           onClick={goHome}
-          className="text-sm sm:text-lg font-display font-semibold tracking-[0.18em] sm:tracking-[0.26em] text-[#faf6f0] hover:text-[#edd2ab] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+          className="text-sm sm:text-lg font-display font-semibold tracking-[0.18em] sm:tracking-[0.26em] text-[#FCFAF7] hover:text-[#E6C887] transition-colors cursor-pointer whitespace-nowrap shrink-0"
         >
           AUVRESENCE
         </button>
@@ -837,7 +837,7 @@ export default function App() {
           )}
           {inEvent && selectedEventId && (
             <>
-              <span aria-hidden="true" className="h-4 w-px bg-[#cf9f5d]/30" />
+              <span aria-hidden="true" className="h-4 w-px bg-[#E6C887]/30" />
               <button
                 type="button"
                 onClick={() => navigate('EXPERIENCE')}
@@ -871,7 +871,7 @@ export default function App() {
             <button
               type="button"
               onClick={exitShowcaseIdentity}
-              className="hidden sm:inline-flex px-3 py-2 text-[10px] font-mono tracking-widest border border-[#cf9f5d]/40 text-[#cf9f5d] hover:bg-[#1a0206] cursor-pointer whitespace-nowrap"
+              className="hidden sm:inline-flex px-3 py-2 text-[10px] font-mono tracking-widest border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] cursor-pointer whitespace-nowrap"
               title="You are using a showcase identity. Exit to return to your own account."
             >
               SHOWCASE IDENTITY · EXIT
@@ -882,9 +882,9 @@ export default function App() {
               type="button"
               onClick={() => handleOpenAskAuvresence()}
               aria-label="Ask Auvresence"
-              className="px-2 sm:px-4 min-h-11 py-2 text-xs font-medium bg-[#1a0206] border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#24040a] hover:border-[#cf9f5d] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
+              className="px-2 sm:px-4 min-h-11 py-2 text-xs font-medium bg-[#120608] border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#17090C] hover:border-[#E6C887] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
             >
-              <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#E6C887]" />
               <span className="hidden sm:inline">Ask Auvresence</span><span className="sm:hidden">Ask</span>
             </button>
           )}
@@ -901,7 +901,7 @@ export default function App() {
               data-testid="sign-in"
               onClick={() => void handleSignIn()}
               disabled={signingIn}
-              className="text-xs tracking-[0.28em] uppercase text-[#edd2ab] border-b border-[#cf9f5d]/60 pb-1 hover:text-[#faf6f0] disabled:opacity-50 cursor-pointer"
+              className="text-xs tracking-[0.28em] uppercase text-[#E6C887] border-b border-[#E6C887]/60 pb-1 hover:text-[#FCFAF7] disabled:opacity-50 cursor-pointer"
             >
               {signingIn ? 'Signing in…' : 'Sign in'}
             </button>
@@ -963,7 +963,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => void handleSignIn('ORGANISE')}
-                className="bg-[#cf9f5d] px-8 py-4 text-xs font-semibold tracking-[0.22em] uppercase text-[#0d0608] hover:bg-[#edd2ab] cursor-pointer"
+                className="bg-[#E6C887] px-8 py-4 text-xs font-semibold tracking-[0.22em] uppercase text-[#080203] hover:bg-[#E6C887] cursor-pointer"
               >
                 Sign in
               </button>
@@ -1052,15 +1052,15 @@ export default function App() {
       {inEvent && (
         <nav
           aria-label="Mobile Navigation"
-          className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-14 bg-[#0d0608]/95 backdrop-blur-xs border-t border-[#cf9f5d]/20 px-4 flex items-center justify-between text-[11px] font-mono tracking-wider"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-14 bg-[#080203]/95 backdrop-blur-xs border-t border-[#E6C887]/20 px-4 flex items-center justify-between text-[11px] font-mono tracking-wider"
         >
-          <button type="button" onClick={goHome} className="min-h-11 py-2 text-[#faf6f0]/65 cursor-pointer">
+          <button type="button" onClick={goHome} className="min-h-11 py-2 text-[#FCFAF7]/65 cursor-pointer">
             HOME
           </button>
           <button
             type="button"
             onClick={() => navigate('EXPERIENCE')}
-            className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'EXPERIENCE' ? 'text-[#cf9f5d] font-semibold' : 'text-[#faf6f0]/65'}`}
+            className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'EXPERIENCE' ? 'text-[#E6C887] font-semibold' : 'text-[#FCFAF7]/65'}`}
           >
             EVENT
           </button>
@@ -1069,7 +1069,7 @@ export default function App() {
               type="button"
               onClick={() => handleOpenAskAuvresence()}
               aria-label="Open Auvresence"
-              className="w-11 h-11 flex items-center justify-center bg-[#cf9f5d] text-[#0d0608] font-semibold cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center bg-[#E6C887] text-[#080203] font-semibold cursor-pointer"
             >
               ✦
             </button>
@@ -1077,7 +1077,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => navigate('LIVE')}
-            className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'LIVE' ? 'text-[#cf9f5d] font-semibold' : 'text-[#faf6f0]/65'}`}
+            className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'LIVE' ? 'text-[#E6C887] font-semibold' : 'text-[#FCFAF7]/65'}`}
           >
             VENUE
           </button>
@@ -1085,7 +1085,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => navigate('ORGANISE')}
-              className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'ORGANISE' ? 'text-[#cf9f5d] font-semibold' : 'text-[#faf6f0]/65'}`}
+              className={`min-h-11 py-2 cursor-pointer ${activeSurface === 'ORGANISE' ? 'text-[#E6C887] font-semibold' : 'text-[#FCFAF7]/65'}`}
             >
               STUDIO
             </button>
@@ -1126,16 +1126,16 @@ export default function App() {
         onClose={() => setXRayOpen(false)}
       />
 
-      <footer className="border-t border-[#cf9f5d]/15 bg-[#0d0608] px-6 py-8 pb-20 md:pb-8">
-        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#faf6f0]/50">
+      <footer className="border-t border-[#E6C887]/15 bg-[#080203] px-6 py-8 pb-20 md:pb-8">
+        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FCFAF7]/50">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="font-display text-[#edd2ab]/80 tracking-widest">
+            <span className="font-display text-[#E6C887]/80 tracking-widest">
               AUVRESENCE
             </span>
             {user && (
               <>
                 <span aria-hidden="true">·</span>
-                <span className="font-mono text-[11px] text-[#faf6f0]/60">
+                <span className="font-mono text-[11px] text-[#FCFAF7]/60">
                   {user.displayName}
                 </span>
               </>
@@ -1146,7 +1146,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setJudgeModeOpen((prev) => !prev)}
-              className="font-mono text-[11px] tracking-widest text-[#cf9f5d]/75 hover:text-[#cf9f5d] transition-colors cursor-pointer whitespace-nowrap"
+              className="font-mono text-[11px] tracking-widest text-[#E6C887]/75 hover:text-[#E6C887] transition-colors cursor-pointer whitespace-nowrap"
             >
               {judgeModeOpen ? 'CLOSE TECHNOVATE' : 'TECHNOVATE'}
             </button>

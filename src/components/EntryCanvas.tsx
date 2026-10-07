@@ -99,14 +99,14 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
   const hello = greeting(user?.displayName);
 
   return (
-    <div className="auv-entrance relative min-h-[100svh] overflow-hidden bg-[#0d0608] text-[#faf6f0]">
+    <div className="auv-entrance auv-atmosphere relative min-h-[100svh] overflow-hidden bg-[#080203] text-[#FCFAF7]">
       {/* Ambient wine light — slow, quiet */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div
           className="absolute left-1/2 top-[30%] h-[720px] w-[1100px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70"
           style={{
             background:
-              'radial-gradient(closest-side, rgba(78,10,23,0.75), rgba(36,4,10,0.35) 55%, transparent)',
+              'radial-gradient(closest-side, rgba(196,18,36,0.20), rgba(196,18,36,0.06) 55%, transparent)',
           }}
         />
         <div
@@ -124,16 +124,16 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
         >
           <path
             d="M -40 700 C 300 640, 520 330, 760 400 C 1000 470, 1180 260, 1500 220"
-            stroke="#cf9f5d"
+            stroke="#E6C887"
             strokeWidth="0.75"
           />
-          <circle cx="760" cy="400" r="3" fill="#edd2ab" />
+          <circle cx="760" cy="400" r="3" fill="#E6C887" />
         </svg>
       </div>
 
       {/* Top edge — the only navigation on the entrance */}
       <header className="relative z-20 flex items-center justify-between px-6 sm:px-10 py-6">
-        <span className="font-display text-sm tracking-[0.34em] text-[#edd2ab]">
+        <span className="auv-wordmark font-display text-sm tracking-[0.34em] text-[#E6C887]">
           AUVRESENCE
         </span>
         {user ? (
@@ -149,7 +149,7 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
             data-testid="sign-in"
             onClick={() => onSignIn()}
             disabled={signingIn}
-            className="min-h-11 text-xs tracking-[0.28em] uppercase text-[#edd2ab] border-b border-[#cf9f5d]/60 pb-1 hover:text-[#faf6f0] hover:border-[#faf6f0] transition-colors disabled:opacity-50 cursor-pointer"
+            className="min-h-11 text-xs tracking-[0.28em] uppercase text-[#E6C887] border-b border-[#E6C887]/60 pb-1 hover:text-[#FCFAF7] hover:border-[#FCFAF7] transition-colors disabled:opacity-50 cursor-pointer"
           >
             {signingIn ? 'Signing in…' : 'Sign in'}
           </button>
@@ -166,14 +166,14 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
               >
                 {hello}
               </h1>
-              <p className="mt-6 font-display italic text-2xl sm:text-3xl text-[#edd2ab]/85">
+              <p className="mt-6 font-editorial italic text-2xl sm:text-3xl text-[#E6C887]/85">
                 What are we doing today?
               </p>
             </>
           ) : (
             <>
-              <p className="text-[11px] font-mono tracking-[0.4em] text-[#cf9f5d]">
-                WELCOME TO YOUR NEXT EXPERIENCE
+              <p className="text-[11px] font-mono tracking-[0.4em] text-[#E6C887]">
+                YOUR WORLD, IN CONVERSATION
               </p>
               <h1 className="mt-8 font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.04] tracking-tight">
                 What are we doing today?
@@ -183,11 +183,11 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
         </div>
 
         {/* Conversational composer — IS the interface here */}
-        <form onSubmit={submit} className="auv-rise-2 mt-12 w-full">
+        <form onSubmit={submit} className="auv-entrance-composer auv-rise-2 mt-12 w-full">
           <label htmlFor="auv-ask" className="sr-only">
             Ask Auvresence
           </label>
-          <div className="flex items-center border border-[#cf9f5d]/40 bg-[#1a0206]/85 pl-6 pr-2 py-2 transition-colors focus-within:border-[#cf9f5d]">
+          <div className="flex items-center border border-[#E6C887]/40 bg-[#120608]/85 pl-6 pr-2 py-2 transition-colors focus-within:border-[#E6C887]">
             <input
               id="auv-ask"
               data-testid="ask-input"
@@ -196,49 +196,49 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
               placeholder="Ask Auvresence…"
               autoComplete="off"
               maxLength={500}
-              className="min-w-0 flex-1 bg-transparent py-3 text-base sm:text-lg text-[#faf6f0] placeholder:text-[#faf6f0]/60 outline-none"
+              className="min-w-0 flex-1 bg-transparent py-3 text-base sm:text-lg text-[#FCFAF7] placeholder:text-[#FCFAF7]/60 outline-none"
             />
             <button
               type="submit"
               aria-label="Send"
               aria-busy={asking}
               disabled={asking || !value.trim()}
-              className="flex shrink-0 h-11 w-11 items-center justify-center bg-[#cf9f5d] text-[#0d0608] transition-colors hover:bg-[#edd2ab] disabled:bg-[#4e0a17] disabled:text-[#faf6f0]/30 cursor-pointer"
+              className="auv-send flex shrink-0 h-11 w-11 items-center justify-center bg-[#E6C887] text-[#080203] transition-colors hover:bg-[#E6C887] disabled:bg-[#C41224] disabled:text-[#FCFAF7]/30 cursor-pointer"
             >
               <ArrowUp className="h-5 w-5" />
             </button>
           </div>
         </form>
 
-        {aiConfigured === false && <p className="mt-4 text-xs text-[#faf6f0]/55 text-center">Event information and navigation are available. Free-form intelligence is currently unavailable.</p>}
+        {aiConfigured === false && <p className="mt-4 text-xs text-[#FCFAF7]/55 text-center">Event information and navigation are available. Free-form intelligence is currently unavailable.</p>}
 
         {/* The response happens here, in the canvas — never in a drawer */}
         <div data-testid="canvas-reply" aria-live="polite" className="w-full">
-          {asking && <p role="status" className="mt-8 font-display italic text-xl text-[#edd2ab]">Auvresence is thinking…</p>}
-          {messages.map((message, index) => <div key={index} className="auv-rise mt-8 w-full border-t border-[#cf9f5d]/20 pt-6">
-            <p className="text-sm text-[#faf6f0]/60 break-words">{message.question}</p>
-            <p role={message.error ? 'alert' : undefined} className="mt-4 font-display text-xl sm:text-2xl text-[#edd2ab] whitespace-pre-wrap break-words">{message.answer || message.error}</p>
-            {!!message.actions?.length && <div className="mt-6 flex flex-wrap gap-3">{message.actions.map((action, i) => <button key={i} type="button" data-testid={action.type === 'CREATE_EVENT' ? 'reply-start-creating' : undefined} onClick={() => openAction(action)} className="inline-flex items-center gap-2 border border-[#cf9f5d]/50 px-5 py-3 text-xs text-[#edd2ab] hover:bg-[#24040a] cursor-pointer">{action.label}<ArrowRight className="h-4 w-4" /></button>)}</div>}
+          {asking && <p role="status" className="mt-8 font-display italic text-xl text-[#E6C887]">Auvresence is thinking…</p>}
+          {messages.map((message, index) => <div key={index} className="auv-rise mt-8 w-full border-t border-[#E6C887]/20 pt-6">
+            <p className="text-sm text-[#FCFAF7]/60 break-words">{message.question}</p>
+            <p role={message.error ? 'alert' : undefined} className="mt-4 font-sans text-base sm:text-lg leading-relaxed text-[#FCFAF7] whitespace-pre-wrap break-words">{message.answer || message.error}</p>
+            {!!message.actions?.length && <div className="mt-6 flex flex-wrap gap-3">{message.actions.map((action, i) => <button key={i} type="button" data-testid={action.type === 'CREATE_EVENT' ? 'reply-start-creating' : undefined} onClick={() => openAction(action)} className="inline-flex items-center gap-2 border border-[#E6C887]/50 px-5 py-3 text-xs text-[#E6C887] hover:bg-[#17090C] cursor-pointer">{action.label}<ArrowRight className="h-4 w-4" /></button>)}</div>}
           </div>)}
         </div>
 
         {/* Deterministic doors — always present, never behind the AI */}
-        <div className="auv-rise-3 mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+        <div className="auv-entrance-doors auv-rise-3 mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           <button
             type="button"
             data-testid="explore-events"
             onClick={onExplore}
-            className="min-h-11 text-xs tracking-[0.26em] uppercase text-[#faf6f0]/80 hover:text-[#edd2ab] transition-colors cursor-pointer"
+            className="min-h-11 text-xs tracking-[0.26em] uppercase text-[#FCFAF7]/80 hover:text-[#E6C887] transition-colors cursor-pointer"
           >
             Explore Events
           </button>
-          {signedIn && <button type="button" className="min-h-11 text-xs tracking-[.2em] text-[#faf6f0]/70 hover:text-[#edd2ab]" onClick={() => document.getElementById('your-journeys')?.scrollIntoView({ behavior: 'auto', block: 'start' })}>Continue my journey</button>}
-          <span aria-hidden="true" className="hidden sm:block h-4 w-px bg-[#cf9f5d]/35" />
+          {signedIn && <button type="button" className="min-h-11 text-xs tracking-[.2em] text-[#FCFAF7]/70 hover:text-[#E6C887]" onClick={() => document.getElementById('your-journeys')?.scrollIntoView({ behavior: 'auto', block: 'start' })}>Continue my journey</button>}
+          <span aria-hidden="true" className="hidden sm:block h-4 w-px bg-[#E6C887]/35" />
           <button
             type="button"
             data-testid="organise-event"
             onClick={() => (signedIn ? onOrganise() : onSignIn('ORGANISE'))}
-            className="min-h-11 inline-flex items-center gap-2 text-xs tracking-[0.26em] uppercase text-[#edd2ab] hover:text-[#faf6f0] transition-colors cursor-pointer"
+            className="min-h-11 inline-flex items-center gap-2 text-xs tracking-[0.26em] uppercase text-[#E6C887] hover:text-[#FCFAF7] transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             Organise an Event
@@ -249,7 +249,7 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
           <p
             role="alert"
             data-testid="auth-error"
-            className="mt-8 max-w-md text-center text-sm text-[#edd2ab]/80"
+            className="mt-8 max-w-md text-center text-sm text-[#E6C887]/80"
           >
             {authError}
           </p>
@@ -260,7 +260,7 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
             type="button"
             onClick={() => onSignIn()}
             disabled={signingIn}
-            className="auv-rise-3 mt-14 text-[11px] tracking-[0.34em] uppercase text-[#faf6f0]/55 hover:text-[#edd2ab] transition-colors disabled:opacity-50 cursor-pointer"
+            className="auv-rise-3 mt-14 text-[11px] tracking-[0.34em] uppercase text-[#FCFAF7]/55 hover:text-[#E6C887] transition-colors disabled:opacity-50 cursor-pointer"
           >
             {signingIn ? 'Signing in…' : 'Sign in'}
           </button>
@@ -273,17 +273,17 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
             data-testid="your-journeys"
             className="mt-24 w-full"
           >
-            <h2 className="font-mono text-[11px] tracking-[0.4em] text-[#cf9f5d]">
+            <h2 className="font-mono text-[11px] tracking-[0.4em] text-[#E6C887]">
               YOUR JOURNEYS
             </h2>
 
             {journeysError ? (
-              <div className="mt-8 text-sm text-[#faf6f0]/70">
+              <div className="mt-8 text-sm text-[#FCFAF7]/70">
                 {journeysError}{' '}
                 <button
                   type="button"
                   onClick={onRetryJourneys}
-                  className="underline decoration-[#cf9f5d]/60 underline-offset-4 text-[#edd2ab] cursor-pointer"
+                  className="underline decoration-[#E6C887]/60 underline-offset-4 text-[#E6C887] cursor-pointer"
                 >
                   Try again
                 </button>
@@ -348,17 +348,17 @@ const JourneyColumn: React.FC<{
   rows: JourneyRow[];
 }> = ({ title, testId, loading, empty, emptyAction, rows }) => (
   <div data-testid={testId}>
-    <h3 className="font-display text-2xl text-[#faf6f0]">{title}</h3>
-    <div className="mt-4 border-t border-[#cf9f5d]/20">
+    <h3 className="font-display text-2xl text-[#FCFAF7]">{title}</h3>
+    <div className="mt-4 border-t border-[#E6C887]/20">
       {loading ? (
-        <p className="py-6 text-sm text-[#faf6f0]/45">Loading…</p>
+        <p className="py-6 text-sm text-[#FCFAF7]/45">Loading…</p>
       ) : rows.length === 0 ? (
-        <div className="py-6 text-sm text-[#faf6f0]/55">
+        <div className="py-6 text-sm text-[#FCFAF7]/55">
           <p>{empty}</p>
           <button
             type="button"
             onClick={emptyAction.onClick}
-            className="mt-3 text-xs tracking-[0.22em] uppercase text-[#edd2ab] border-b border-[#cf9f5d]/50 pb-0.5 hover:text-[#faf6f0] cursor-pointer"
+            className="mt-3 text-xs tracking-[0.22em] uppercase text-[#E6C887] border-b border-[#E6C887]/50 pb-0.5 hover:text-[#FCFAF7] cursor-pointer"
           >
             {emptyAction.label}
           </button>
@@ -366,7 +366,7 @@ const JourneyColumn: React.FC<{
       ) : (
         <ul>
           {rows.map((r) => (
-            <li key={r.id} className="border-b border-[#cf9f5d]/15">
+            <li key={r.id} className="border-b border-[#E6C887]/15">
               <button
                 type="button"
                 data-testid={`journey-${r.id}`}
@@ -374,14 +374,14 @@ const JourneyColumn: React.FC<{
                 className="group flex w-full items-start justify-between gap-4 py-5 text-left cursor-pointer"
               >
                 <span>
-                  <span className="block font-display text-xl text-[#faf6f0] group-hover:text-[#edd2ab] transition-colors">
+                  <span className="block font-display text-xl text-[#FCFAF7] group-hover:text-[#E6C887] transition-colors">
                     {r.title}
                   </span>
-                  <span className="mt-1 block text-xs text-[#faf6f0]/55">
+                  <span className="mt-1 block text-xs text-[#FCFAF7]/55">
                     {r.meta}
                   </span>
                 </span>
-                <span className="mt-1 shrink-0 font-mono text-[10px] tracking-[0.2em] text-[#cf9f5d]">
+                <span className="mt-1 shrink-0 font-mono text-[10px] tracking-[0.2em] text-[#E6C887]">
                   {r.badge}
                 </span>
               </button>

@@ -215,9 +215,9 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
   if (!context) {
     return (
       <div className="max-w-[1160px] mx-auto px-6 py-20 space-y-8">
-        <div className="h-4 w-28 bg-[#1a0206] animate-pulse" />
-        <div className="h-12 w-72 bg-[#1a0206] animate-pulse" />
-        <div className="h-96 bg-[#1a0206] animate-pulse" />
+        <div className="h-4 w-28 bg-[#120608] animate-pulse" />
+        <div className="h-12 w-72 bg-[#120608] animate-pulse" />
+        <div className="h-96 bg-[#120608] animate-pulse" />
       </div>
     );
   }
@@ -374,34 +374,34 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
 
   if (context.venues.length === 0) return (
     <section className="mx-auto max-w-3xl px-6 py-24 sm:py-32">
-      <p className="text-xs font-mono tracking-[.3em] text-[#cf9f5d]">VENUE</p>
+      <p className="text-xs font-mono tracking-[.3em] text-[#E6C887]">VENUE</p>
       <h1 className="mt-6 font-display text-5xl sm:text-6xl">{context.isOrganiser ? 'Your event needs a place.' : 'A place is taking shape.'}</h1>
-      <p className="mt-6 text-[#edd2ab]">{context.isOrganiser ? 'Teach Auvresence your venue. Start with the places people need to find.' : 'Your organiser hasn’t published any places yet. Check back for the event map.'}</p>
+      <p className="mt-6 text-[#E6C887]">{context.isOrganiser ? 'Teach Auvresence your venue. Start with the places people need to find.' : 'Your organiser hasn’t published any places yet. Check back for the event map.'}</p>
       {context.isOrganiser && onOpenVenueStudio && <button type="button" className="auv-btn auv-btn-primary mt-8" onClick={onOpenVenueStudio}>Create venue <ArrowLeft className="h-4 w-4 rotate-180" /></button>}
       {onBackToCompanion && <button type="button" className="auv-btn auv-btn-text mt-8 ml-4" onClick={onBackToCompanion}>Back to event</button>}
     </section>
   );
 
   return (
-    <div className="max-w-[1160px] mx-auto px-6 py-10 lg:py-14 space-y-12 pb-28 md:pb-16">
+    <div className="auv-venue-workspace max-w-[1280px] mx-auto px-5 sm:px-8 py-10 lg:py-14 space-y-12 pb-28 md:pb-16">
       {/* HEADER */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#cf9f5d]/15 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E6C887]/15 pb-5">
         <div className="flex flex-wrap items-center gap-4">
           {onBackToCompanion && (
             <button
               type="button"
               onClick={onBackToCompanion}
-              className="text-xs font-mono text-[#edd2ab]/75 hover:text-[#faf6f0] inline-flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-mono text-[#E6C887]/75 hover:text-[#FCFAF7] inline-flex items-center gap-1.5 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               TODAY
             </button>
           )}
-          <span className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+          <span className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
             VENUE
           </span>
           {context.event.venueName && (
-            <span className="text-xs font-mono text-[#faf6f0]/60">
+            <span className="text-xs font-mono text-[#FCFAF7]/60">
               · {context.event.venueName}
             </span>
           )}
@@ -410,45 +410,45 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
         <button
           type="button"
           onClick={() => onOpenAskAuvresence('Where do I go next?')}
-          className="text-xs font-medium text-[#edd2ab] hover:text-[#faf6f0] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+          className="text-xs font-medium text-[#E6C887] hover:text-[#FCFAF7] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
         >
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-[#E6C887]" />
           Where do I go next?
         </button>
       </div>
 
       <div className="max-w-xl">
-        <label htmlFor="venue-search" className="block text-xs font-mono tracking-widest text-[#cf9f5d] mb-3">FIND YOUR PLACE</label>
+        <label htmlFor="venue-search" className="block text-xs font-mono tracking-widest text-[#E6C887] mb-3">FIND YOUR PLACE</label>
         <input id="venue-search" type="search" className="auv-input" placeholder="Search places, amenities, or floors" value={search} onChange={(e) => { setSearch(e.target.value); setSelectedFloor('ALL'); setCategoryFilter('ALL'); }} />
       </div>
       {/* YOUR NEXT DESTINATION HERO */}
       {nextDest && (
-        <section className="grid lg:grid-cols-12 gap-8 items-end border-b border-[#cf9f5d]/20 pb-12">
+        <section className="grid lg:grid-cols-12 gap-8 items-end border-b border-[#E6C887]/20 pb-12">
           <div className="lg:col-span-8 space-y-3">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-mono tracking-widest text-[#cf9f5d]">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-mono tracking-widest text-[#E6C887]">
               <span>YOUR NEXT DESTINATION</span>
               {pulse.upNext?.lastUpdatedNote && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <span className="text-[#edd2ab] font-semibold">UPDATED</span>
+                  <span className="text-[#E6C887] font-semibold">UPDATED</span>
                 </>
               )}
             </div>
 
             <div className="flex flex-wrap items-baseline gap-4">
-              <h1 className="text-4xl sm:text-6xl font-display font-normal text-[#faf6f0] tracking-tight uppercase">
+              <h1 className="text-4xl sm:text-6xl font-display font-normal text-[#FCFAF7] tracking-tight uppercase">
                 {nextDest.name}
               </h1>
             </div>
 
-            <p className="text-lg font-display text-[#edd2ab]">
+            <p className="text-lg font-display text-[#E6C887]">
               {pulse.upNext?.title} ·{' '}
               <span className="font-mono text-sm tabular-nums">
                 {pulse.upNext?.startTime}
               </span>
             </p>
 
-            <p className="text-xs font-mono text-[#faf6f0]/60">
+            <p className="text-xs font-mono text-[#FCFAF7]/60">
               {nextDest.floor} · {nextDest.zone}
             </p>
           </div>
@@ -457,7 +457,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
             <button
               type="button"
               onClick={() => setSelectedVenueId(nextDest.id)}
-              className="px-5 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer whitespace-nowrap"
+              className="px-5 py-3 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer whitespace-nowrap"
             >
               Route to {nextDest.name}
             </button>
@@ -465,7 +465,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
               type="button"
               onClick={() => handleWaypointCheckIn(nextDest)}
               disabled={scanningWaypoint || context.myApplication?.status !== 'ACCEPTED'}
-              className="px-5 py-3 text-xs font-medium border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] transition-colors cursor-pointer whitespace-nowrap"
+              className="px-5 py-3 text-xs font-medium border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] transition-colors cursor-pointer whitespace-nowrap"
             >
               Check in
             </button>
@@ -474,9 +474,9 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
       )}
 
       {/* FLOOR & AMENITY CONTROLS */}
-      <div className="flex flex-wrap items-center justify-between gap-6 border-b border-[#cf9f5d]/15 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-6 border-b border-[#E6C887]/15 pb-5">
         <div className="flex flex-wrap items-center gap-5">
-          <span className="text-[11px] font-mono tracking-widest text-[#cf9f5d] uppercase">
+          <span className="text-[11px] font-mono tracking-widest text-[#E6C887] uppercase">
             FLOOR
           </span>
           <button
@@ -484,8 +484,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
             onClick={() => setSelectedFloor('ALL')}
             className={`text-xs font-mono uppercase pb-1 transition-colors cursor-pointer ${
               selectedFloor === 'ALL'
-                ? 'text-[#faf6f0] border-b-2 border-[#cf9f5d]'
-                : 'text-[#faf6f0]/55 hover:text-[#edd2ab]'
+                ? 'text-[#FCFAF7] border-b-2 border-[#E6C887]'
+                : 'text-[#FCFAF7]/55 hover:text-[#E6C887]'
             }`}
           >
             All Floors
@@ -497,8 +497,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
               onClick={() => setSelectedFloor(fl)}
               className={`text-xs font-mono uppercase pb-1 transition-colors cursor-pointer ${
                 selectedFloor === fl
-                  ? 'text-[#faf6f0] border-b-2 border-[#cf9f5d]'
-                  : 'text-[#faf6f0]/55 hover:text-[#edd2ab]'
+                  ? 'text-[#FCFAF7] border-b-2 border-[#E6C887]'
+                  : 'text-[#FCFAF7]/55 hover:text-[#E6C887]'
               }`}
             >
               {fl}
@@ -507,14 +507,14 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-[11px] font-mono tracking-widest text-[#cf9f5d] uppercase">
+          <span className="text-[11px] font-mono tracking-widest text-[#E6C887] uppercase">
             FIND
           </span>
           {context.venues.some(v => v.operationalStatus === 'OPEN' && (v.poiType === 'FOOD' || v.poiType === 'CAFE')) && (
           <button
             type="button"
             onClick={() => handleQuickAmenitySelect('FOOD')}
-            className="text-xs font-mono text-[#edd2ab]/80 hover:text-[#faf6f0] underline underline-offset-4 decoration-[#cf9f5d]/40 cursor-pointer"
+            className="text-xs font-mono text-[#E6C887]/80 hover:text-[#FCFAF7] underline underline-offset-4 decoration-[#E6C887]/40 cursor-pointer"
           >
             Food & Dining
           </button>
@@ -523,7 +523,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
           <button
             type="button"
             onClick={() => handleQuickAmenitySelect('WASHROOM')}
-            className="text-xs font-mono text-[#edd2ab]/80 hover:text-[#faf6f0] underline underline-offset-4 decoration-[#cf9f5d]/40 cursor-pointer"
+            className="text-xs font-mono text-[#E6C887]/80 hover:text-[#FCFAF7] underline underline-offset-4 decoration-[#E6C887]/40 cursor-pointer"
           >
             Washrooms
           </button>
@@ -532,7 +532,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
           <button
             type="button"
             onClick={() => handleQuickAmenitySelect('MEDICAL')}
-            className="text-xs font-mono text-[#edd2ab]/80 hover:text-[#faf6f0] underline underline-offset-4 decoration-[#cf9f5d]/40 cursor-pointer"
+            className="text-xs font-mono text-[#E6C887]/80 hover:text-[#FCFAF7] underline underline-offset-4 decoration-[#E6C887]/40 cursor-pointer"
           >
             Medical & Help
           </button>
@@ -542,8 +542,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
             onClick={() => setAccessibleOnly((prev) => !prev)}
             className={`px-3 py-1.5 text-[11px] font-mono tracking-wider uppercase border transition-colors cursor-pointer ${
               accessibleOnly
-                ? 'bg-[#cf9f5d] text-[#0d0608] border-[#cf9f5d] font-semibold'
-                : 'border-[#cf9f5d]/35 text-[#edd2ab] hover:border-[#cf9f5d]'
+                ? 'bg-[#E6C887] text-[#080203] border-[#E6C887] font-semibold'
+                : 'border-[#E6C887]/35 text-[#E6C887] hover:border-[#E6C887]'
             }`}
           >
             {accessibleOnly ? 'Step-Free Active' : 'Step-Free Route'}
@@ -557,10 +557,10 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
         <div className="lg:col-span-7 space-y-10">
           {/* Interactive Spatial Canvas */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs font-mono text-[#edd2ab]/75">
+            <div className="flex items-center justify-between text-xs font-mono text-[#E6C887]/75">
               <span>
                 {selectedFloor === 'ALL'
-                  ? 'YOUR EVENT, MAPPED'
+                  ? 'PLACES & CONNECTIONS'
                   : `${selectedFloor.toUpperCase()}${
                       activeFloorObj?.description
                         ? ` · ${activeFloorObj.description}`
@@ -568,14 +568,14 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                     }`}
               </span>
               {activeRoute && activeRoute.steps.length > 1 && (
-                <span className="text-[#cf9f5d] tabular-nums">
+                <span className="text-[#E6C887] tabular-nums">
                   ~{activeRoute.totalDistanceMeters}m ·{' '}
                   {activeRoute.estimatedMinutes} min walk
                 </span>
               )}
             </div>
 
-            <div className="relative w-full h-[380px] bg-[#130307] border border-[#cf9f5d]/25 overflow-hidden select-none">
+            <div className="auv-spatial-canvas relative w-full h-[380px] bg-[#0A0204] border border-[#E6C887]/25 overflow-hidden select-none">
               <svg
                 className="absolute inset-0 w-full h-full"
                 viewBox="0 0 100 100"
@@ -650,7 +650,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                       y2={toV.mapY}
                       stroke={
                         isOnActiveRoute
-                          ? '#cf9f5d'
+                          ? '#E6C887'
                           : 'rgba(207, 159, 93, 0.18)'
                       }
                       strokeWidth={isOnActiveRoute ? '0.8' : '0.35'}
@@ -688,35 +688,35 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                   >
                     <div className="flex flex-col items-center">
                       {isNext && (
-                        <span className="mb-1 px-2 py-0.5 bg-[#cf9f5d] text-[#0d0608] text-[10px] font-mono font-semibold whitespace-nowrap">
+                        <span className="mb-1 px-2 py-0.5 bg-[#E6C887] text-[#080203] text-[10px] font-mono font-semibold whitespace-nowrap">
                           NEXT
                         </span>
                       )}
                       {!isNext && isCurrent && (
-                        <span className="mb-1 px-2 py-0.5 bg-emerald-400 text-[#0d0608] text-[10px] font-mono font-semibold whitespace-nowrap">
+                        <span className="mb-1 px-2 py-0.5 bg-emerald-400 text-[#080203] text-[10px] font-mono font-semibold whitespace-nowrap">
                           NOW
                         </span>
                       )}
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[#0d0608] transition-colors ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[#080203] transition-colors ${
                           isClosed
                             ? 'bg-red-900/70 border border-red-400/60'
                             : isNext
-                            ? 'bg-[#cf9f5d] ring-4 ring-[#cf9f5d]/30'
+                            ? 'bg-[#E6C887] ring-4 ring-[#E6C887]/30'
                             : isCurrent
                             ? 'bg-emerald-400 ring-4 ring-emerald-400/25'
                             : isSelected || isOnRoute
-                            ? 'bg-[#edd2ab] ring-2 ring-[#cf9f5d]'
-                            : 'bg-[#1a0206] text-[#edd2ab] border border-[#cf9f5d]/70'
+                            ? 'bg-[#E6C887] ring-2 ring-[#E6C887]'
+                            : 'bg-[#120608] text-[#E6C887] border border-[#E6C887]/70'
                         }`}
                       ><PoiIcon type={v.poiType} /></div>
                       <span
                         className={`mt-1 px-1.5 py-0.5 text-[10px] font-mono whitespace-nowrap ${
                           isNext || isSelected
-                            ? 'text-[#faf6f0] font-semibold bg-[#0d0608]/95 border border-[#cf9f5d]/50'
+                            ? 'text-[#FCFAF7] font-semibold bg-[#080203]/95 border border-[#E6C887]/50'
                             : isOnRoute
-                            ? 'text-[#edd2ab] bg-[#0d0608]/90 border border-[#cf9f5d]/30'
-                            : 'text-[#edd2ab]/75 bg-[#0d0608]/75'
+                            ? 'text-[#E6C887] bg-[#080203]/90 border border-[#E6C887]/30'
+                            : 'text-[#E6C887]/75 bg-[#080203]/75'
                         }`}
                       >
                         {v.name}
@@ -731,7 +731,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
           {/* Abstract Spatial Venue Directory (Connected Tree) */}
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                 PLACES ({filteredVenues.length})
               </p>
               <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
@@ -751,8 +751,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                     onClick={() => setCategoryFilter(key)}
                     className={`cursor-pointer transition-colors ${
                       categoryFilter === key
-                        ? 'text-[#cf9f5d] font-semibold'
-                        : 'text-[#faf6f0]/50 hover:text-[#edd2ab]'
+                        ? 'text-[#E6C887] font-semibold'
+                        : 'text-[#FCFAF7]/50 hover:text-[#E6C887]'
                     }`}
                   >
                     {label}
@@ -761,7 +761,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
               </div>
             </div>
 
-            <div className="border-l border-[#cf9f5d]/30 pl-6 space-y-5">
+            <div className="border-l border-[#E6C887]/30 pl-6 space-y-5">
               {filteredVenues.map((v) => {
                 const isNext = nextDest?.id === v.id;
                 const isNow = currentVenue?.id === v.id;
@@ -779,8 +779,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                       aria-hidden="true"
                       className={`absolute -left-6 top-1/2 w-4 h-px transition-colors ${
                         isNext || isSelected
-                          ? 'bg-[#cf9f5d]'
-                          : 'bg-[#cf9f5d]/30 group-hover:bg-[#cf9f5d]/60'
+                          ? 'bg-[#E6C887]'
+                          : 'bg-[#E6C887]/30 group-hover:bg-[#E6C887]/60'
                       }`}
                     />
 
@@ -789,29 +789,29 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                         <span
                           className={`text-xl font-display tracking-wide uppercase transition-colors ${
                             isClosed
-                              ? 'text-[#faf6f0]/40 line-through'
+                              ? 'text-[#FCFAF7]/40 line-through'
                               : isNext
-                              ? 'text-[#faf6f0] font-semibold'
+                              ? 'text-[#FCFAF7] font-semibold'
                               : isSelected
-                              ? 'text-[#edd2ab]'
-                              : 'text-[#faf6f0]/75 group-hover:text-[#faf6f0]'
+                              ? 'text-[#E6C887]'
+                              : 'text-[#FCFAF7]/75 group-hover:text-[#FCFAF7]'
                           }`}
                         >
                           {v.name}
                         </span>
-                        <span className="text-xs font-mono text-[#faf6f0]/45">
+                        <span className="text-xs font-mono text-[#FCFAF7]/45">
                           {v.floor}
                         </span>
-                        <span className="text-[11px] font-mono text-[#cf9f5d]/75 uppercase">
+                        <span className="text-[11px] font-mono text-[#E6C887]/75 uppercase">
                           {v.poiType.replace('_', ' ')}
                         </span>
                         {!v.accessible && (
-                          <span className="text-[10px] font-mono text-[#faf6f0]/40 uppercase">
+                          <span className="text-[10px] font-mono text-[#FCFAF7]/40 uppercase">
                             Stairs only
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#faf6f0]/55">{v.zone}</p>
+                      <p className="text-xs text-[#FCFAF7]/55">{v.zone}</p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
@@ -821,8 +821,8 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                         </span>
                       )}
                       {!isClosed && isNext && (
-                        <span className="text-xs font-mono tracking-widest text-[#cf9f5d] font-semibold inline-flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#cf9f5d]" />
+                        <span className="text-xs font-mono tracking-widest text-[#E6C887] font-semibold inline-flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#E6C887]" />
                           NEXT
                         </span>
                       )}
@@ -841,52 +841,52 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
         </div>
 
         {/* Right 5 Columns: Active Location Detail, Multi-Floor Route & Check-In */}
-        <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#cf9f5d]/15 lg:pl-10">
+        <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#E6C887]/15 lg:pl-10">
           {activeVenue && (
             <div className="space-y-8">
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+                  <p className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                     {activeVenue.poiType.replace('_', ' ')} ·{' '}
                     {activeVenue.operationalStatus}
                   </p>
                   {activeVenue.accessible && (
-                    <span className="text-[11px] font-mono text-[#edd2ab]/80 uppercase">
+                    <span className="text-[11px] font-mono text-[#E6C887]/80 uppercase">
                       Step-free
                     </span>
                   )}
                 </div>
-                <h2 className="text-3xl font-display font-normal text-[#faf6f0] uppercase">
+                <h2 className="text-3xl font-display font-normal text-[#FCFAF7] uppercase">
                   {activeVenue.name}
                 </h2>
-                <p className="text-xs font-mono text-[#edd2ab]">
+                <p className="text-xs font-mono text-[#E6C887]">
                   {activeVenue.floor} · {activeVenue.zone}
                 </p>
-                <p className="text-sm text-[#faf6f0]/75 pt-2 leading-relaxed">
+                <p className="text-sm text-[#FCFAF7]/75 pt-2 leading-relaxed">
                   {activeVenue.shortDescription}
                 </p>
               </div>
 
-              {!originVenue && <div className="border-y border-[#cf9f5d]/20 py-6 space-y-3"><p className="text-sm text-[#edd2ab]">Choose a starting place to view a route. Your current location is not tracked.</p><label className="block text-xs text-[#edd2ab]">Route starting place<select aria-label="Route starting place" value="" onChange={e => setFromVenueIdOverride(Number(e.target.value))} className="auv-input mt-2"><option value="">Choose a place</option>{context.venues.map(v => <option key={v.id} value={v.id}>{v.name} ({v.floor})</option>)}</select></label></div>}
+              {!originVenue && <div className="border-y border-[#E6C887]/20 py-6 space-y-3"><p className="text-sm text-[#E6C887]">Choose a starting place to view a route. Your current location is not tracked.</p><label className="block text-xs text-[#E6C887]">Route starting place<select aria-label="Route starting place" value="" onChange={e => setFromVenueIdOverride(Number(e.target.value))} className="auv-input mt-2"><option value="">Choose a place</option>{context.venues.map(v => <option key={v.id} value={v.id}>{v.name} ({v.floor})</option>)}</select></label></div>}
               {activeRoute?.unreachable && (
                 <div
                   role="status"
-                  className="border-t border-b border-[#cf9f5d]/20 py-6 space-y-3"
+                  className="border-t border-b border-[#E6C887]/20 py-6 space-y-3"
                 >
-                  <p className="text-lg font-display text-[#faf6f0]">
+                  <p className="text-lg font-display text-[#FCFAF7]">
                     Route unavailable
                   </p>
-                  <p className="text-sm text-[#faf6f0]/65">
+                  <p className="text-sm text-[#FCFAF7]/65">
                     This path hasn&apos;t been connected yet.
                   </p>
-                  <label className="flex items-center gap-2 text-xs text-[#edd2ab]/75">
+                  <label className="flex items-center gap-2 text-xs text-[#E6C887]/75">
                     From
                     <select
                       value={originVenue?.id || ''}
                       onChange={(e) =>
                         setFromVenueIdOverride(Number(e.target.value))
                       }
-                      className="bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] px-2 py-1 text-xs focus:outline-none focus:border-[#cf9f5d]"
+                      className="bg-[#120608] border border-[#E6C887]/30 text-[#FCFAF7] px-2 py-1 text-xs focus:outline-none focus:border-[#E6C887]"
                     >
                       {context.venues.map((v) => (
                         <option key={v.id} value={v.id}>
@@ -900,19 +900,19 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
 
               {/* STEP-BY-STEP MULTI-FLOOR WAYFINDING */}
               {activeRoute && activeRoute.steps.length > 0 && (
-                <div className="border-t border-b border-[#cf9f5d]/20 py-6 space-y-4">
+                <div className="border-t border-b border-[#E6C887]/20 py-6 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+                    <span className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                       ROUTE GUIDANCE
                     </span>
-                    <div className="flex items-center gap-2 text-xs font-mono text-[#edd2ab]/75">
+                    <div className="flex items-center gap-2 text-xs font-mono text-[#E6C887]/75">
                       <span>From:</span>
                       <select
                         value={originVenue?.id || ''}
                         onChange={(e) =>
                           setFromVenueIdOverride(Number(e.target.value))
                         }
-                        className="bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] px-2 py-1 text-xs font-mono focus:outline-none focus:border-[#cf9f5d]"
+                        className="bg-[#120608] border border-[#E6C887]/30 text-[#FCFAF7] px-2 py-1 text-xs font-mono focus:outline-none focus:border-[#E6C887]"
                       >
                         {context.venues.map((v) => (
                           <option key={v.id} value={v.id}>
@@ -923,13 +923,13 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="space-y-3 pl-4 border-l border-[#cf9f5d]/35">
+                  <div className="space-y-3 pl-4 border-l border-[#E6C887]/35">
                     {activeRoute.steps.map((step, idx) => (
                       <div key={`${step.venueId}-${idx}`} className="space-y-0.5">
-                        <p className="text-[11px] font-mono text-[#cf9f5d] uppercase">
+                        <p className="text-[11px] font-mono text-[#E6C887] uppercase">
                           STEP {idx + 1} · {step.floor}
                         </p>
-                        <p className="text-sm text-[#faf6f0]">
+                        <p className="text-sm text-[#FCFAF7]">
                           {step.instruction}
                         </p>
                       </div>
@@ -939,24 +939,24 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
               )}
 
               {scanMessage && (
-                <div className="p-4 border border-[#cf9f5d]/40 bg-[#1a0206] text-xs text-[#faf6f0]">
+                <div className="p-4 border border-[#E6C887]/40 bg-[#120608] text-xs text-[#FCFAF7]">
                   {scanMessage.text}
                 </div>
               )}
 
-              {context.isOrganiser && activeVenue.waypointToken && <div className="bg-[#faf6f0] p-5 flex items-center gap-5 max-w-sm">
+              {context.isOrganiser && activeVenue.waypointToken && <div className="bg-[#FCFAF7] p-5 flex items-center gap-5 max-w-sm">
                 <QRCodeSVG
                   value={`${window.location.origin}/waypoint/${activeVenue.waypointToken}`}
                   size={84}
-                  bgColor="#faf6f0"
-                  fgColor="#0d0608"
+                  bgColor="#FCFAF7"
+                  fgColor="#080203"
                   level="M"
                 />
-                <div className="text-[#0d0608] space-y-1">
+                <div className="text-[#080203] space-y-1">
                   <p className="text-xs font-mono font-semibold uppercase">
                     {activeVenue.name}
                   </p>
-                  <p className="text-[11px] text-[#0d0608]/75 leading-snug">
+                  <p className="text-[11px] text-[#080203]/75 leading-snug">
                     Organiser check-in code. Print this at the entrance.
                   </p>
                 </div>
@@ -966,7 +966,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
                 type="button"
                 onClick={() => handleWaypointCheckIn(activeVenue)}
                 disabled={scanningWaypoint || context.myApplication?.status !== 'ACCEPTED'}
-                className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Navigation className="w-3.5 h-3.5" />
                 {scanningWaypoint
@@ -977,37 +977,37 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
           )}
 
           {/* Visited Locations */}
-          <div className="pt-8 border-t border-[#cf9f5d]/15 space-y-4">
+          <div className="pt-8 border-t border-[#E6C887]/15 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+              <span className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                 CHECKED IN
               </span>
-              <span className="text-xs font-mono text-[#edd2ab]/70 tabular-nums">
+              <span className="text-xs font-mono text-[#E6C887]/70 tabular-nums">
                 {context.waypointTrail.length}
               </span>
             </div>
 
             {context.waypointTrail.length === 0 ? (
-              <p className="text-xs text-[#faf6f0]/55">
+              <p className="text-xs text-[#FCFAF7]/55">
                 No room check-ins recorded yet today.
               </p>
             ) : (
-              <div className="divide-y divide-[#cf9f5d]/15">
+              <div className="divide-y divide-[#E6C887]/15">
                 {context.waypointTrail.map((entry) => (
                   <div
                     key={entry.id}
                     className="py-3 flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Check className="w-3.5 h-3.5 text-[#cf9f5d]" />
-                      <span className="text-[#faf6f0] font-medium">
+                      <Check className="w-3.5 h-3.5 text-[#E6C887]" />
+                      <span className="text-[#FCFAF7] font-medium">
                         {entry.venueName}
                       </span>
-                      <span className="text-[#faf6f0]/50">
+                      <span className="text-[#FCFAF7]/50">
                         · {entry.venueFloor}
                       </span>
                     </div>
-                    <span className="font-mono text-[#edd2ab]/75 tabular-nums">
+                    <span className="font-mono text-[#E6C887]/75 tabular-nums">
                       {entry.scannedAt
                         ? new Date(entry.scannedAt).toLocaleTimeString([], {
                             hour: '2-digit',

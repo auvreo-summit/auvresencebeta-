@@ -50,7 +50,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
         aria-expanded={open}
         data-testid="profile-avatar"
         onClick={() => setOpen((v) => !v)}
-        className="w-11 h-11 rounded-full overflow-hidden border border-[#cf9f5d]/50 bg-[#24040a] text-[#edd2ab] text-xs font-semibold tracking-wider flex items-center justify-center hover:border-[#cf9f5d] transition-colors cursor-pointer"
+        className="w-11 h-11 rounded-full overflow-hidden border border-[#E6C887]/50 bg-[#17090C] text-[#E6C887] text-xs font-semibold tracking-wider flex items-center justify-center hover:border-[#E6C887] transition-colors cursor-pointer"
       >
         {photoURL ? (
           <img
@@ -67,11 +67,11 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-3 w-64 bg-[#1a0206] border border-[#cf9f5d]/30 shadow-2xl z-50"
+          className="absolute right-0 mt-3 w-64 bg-[#120608] border border-[#E6C887]/30 shadow-2xl z-50"
         >
-          <div className="px-4 py-4 border-b border-[#cf9f5d]/15">
-            <p className="text-sm text-[#faf6f0] truncate">{user.displayName}</p>
-            <p className="text-xs text-[#faf6f0]/55 truncate mt-0.5">
+          <div className="px-4 py-4 border-b border-[#E6C887]/15">
+            <p className="text-sm text-[#FCFAF7] truncate">{user.displayName}</p>
+            <p className="text-xs text-[#FCFAF7]/55 truncate mt-0.5">
               {user.email}
             </p>
           </div>
@@ -82,7 +82,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               setOpen(false);
               onGoHome();
             }}
-            className="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-[#edd2ab] hover:bg-[#24040a] cursor-pointer"
+            className="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-[#E6C887] hover:bg-[#17090C] cursor-pointer"
           >
             Home
           </button>
@@ -94,7 +94,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               setOpen(false);
               onSignOut();
             }}
-            className="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-[#faf6f0]/70 hover:bg-[#24040a] border-t border-[#cf9f5d]/10 cursor-pointer"
+            className="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-[#FCFAF7]/70 hover:bg-[#17090C] border-t border-[#E6C887]/10 cursor-pointer"
           >
             Sign out
           </button>

@@ -505,14 +505,14 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Ask Auvresence" tabIndex={-1} className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Ask Auvresence" tabIndex={-1} className="auv-conversation-sheet w-full max-w-lg bg-[#080203] border-l border-[#E6C887]/35 h-full flex flex-col justify-between shadow-2xl">
         {/* HEADER */}
-        <div className="p-7 border-b border-[#cf9f5d]/20 flex items-start justify-between gap-4">
+        <div className="p-7 border-b border-[#E6C887]/20 flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-xs font-mono tracking-[0.26em] text-[#cf9f5d] uppercase">
+            <p className="text-xs font-mono tracking-[0.26em] text-[#E6C887] uppercase">
               ASK AUVRESENCE
             </p>
-            <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+            <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
               What do you need?
             </h2>
           </div>
@@ -520,7 +520,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 min-w-11 flex items-center justify-center p-2 text-[#faf6f0]/60 hover:text-[#faf6f0] cursor-pointer"
+            className="min-h-11 min-w-11 flex items-center justify-center p-2 text-[#FCFAF7]/60 hover:text-[#FCFAF7] cursor-pointer"
             aria-label="Close Ask Auvresence"
           >
             <X className="w-4 h-4" />
@@ -528,7 +528,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
         </div>
 
         {/* BODY */}
-        <div className="flex-1 overflow-y-auto p-7 space-y-8">
+        <div className="auv-conversation-stream flex-1 overflow-y-auto p-7 space-y-8">
           {/* Contextual Suggestions */}
           <div className="flex flex-wrap gap-2">
             {suggestions.map((q) => (
@@ -537,7 +537,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                 type="button"
                 disabled={loading}
                 onClick={() => submitQuestion(q)}
-                className="px-3.5 py-2 text-xs bg-[#1a0206] border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] hover:border-[#cf9f5d] transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50"
+                className="px-3.5 py-2 text-xs bg-[#120608] border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] hover:border-[#E6C887] transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50"
               >
                 {q}
               </button>
@@ -546,7 +546,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
           {/* Voice State Indicator */}
           {voiceState !== 'IDLE' && (
-            <div className="py-3 px-4 border border-[#cf9f5d]/40 bg-[#1a0206] flex items-center justify-between text-xs font-mono text-[#cf9f5d]">
+            <div className="py-3 px-4 border border-[#E6C887]/40 bg-[#120608] flex items-center justify-between text-xs font-mono text-[#E6C887]">
               <span className="inline-flex items-center gap-2">
                 <Volume2 className="w-3.5 h-3.5 animate-pulse" />
                 {voiceState}
@@ -555,7 +555,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                 <button
                   type="button"
                   onClick={handleToggleVoice}
-                  className="underline text-[#edd2ab] cursor-pointer"
+                  className="underline text-[#E6C887] cursor-pointer"
                 >
                   Done
                 </button>
@@ -565,9 +565,9 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
           {/* Loading Skeleton */}
           {loading && (
-            <div className="space-y-3 py-4 border-t border-[#cf9f5d]/15">
-              <div className="h-3 w-24 bg-[#1a0206] animate-pulse" />
-              <div className="h-16 bg-[#1a0206] animate-pulse" />
+            <div className="space-y-3 py-4 border-t border-[#E6C887]/15">
+              <div className="h-3 w-24 bg-[#120608] animate-pulse" />
+              <div className="h-16 bg-[#120608] animate-pulse" />
             </div>
           )}
 
@@ -576,29 +576,29 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
             {history.map((item) => (
               <div
                 key={item.id}
-                className="space-y-4 border-t border-[#cf9f5d]/20 pt-6"
+                className="space-y-4 border-t border-[#E6C887]/20 pt-6"
               >
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-base font-display italic text-[#edd2ab]">
+                  <p className="text-base font-display italic text-[#E6C887]">
                     {item.question}
                   </p>
-                  <span className="text-[11px] font-mono text-[#faf6f0]/40 tabular-nums">
+                  <span className="text-[11px] font-mono text-[#FCFAF7]/40 tabular-nums">
                     {item.timestamp}
                   </span>
                 </div>
 
                 {item.error ? (
-                  <div className="p-5 border border-[#cf9f5d]/30 bg-[#1a0206] space-y-2">
-                    <p className="text-sm font-display text-[#edd2ab]">
+                  <div className="p-5 border border-[#E6C887]/30 bg-[#120608] space-y-2">
+                    <p className="text-sm font-display text-[#E6C887]">
                       Auvresence is temporarily unavailable.
                     </p>
-                    <p className="text-xs text-[#faf6f0]/70">
+                    <p className="text-xs text-[#FCFAF7]/70">
                       Your event information is still accessible.
                     </p>
                   </div>
                 ) : (
                   item.answer && (
-                    <p className="text-sm text-[#faf6f0]/90 leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-[#FCFAF7]/90 leading-relaxed whitespace-pre-line">
                       {item.answer}
                     </p>
                   )
@@ -606,27 +606,27 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
                 {/* CONSEQUENTIAL AI ACTION CONFIRMATION CARD */}
                 {item.venueProposal && (
-                  <div className="border border-[#cf9f5d]/50 bg-[#1a0206] p-6 space-y-5">
-                    <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                  <div className="border border-[#E6C887]/50 bg-[#120608] p-6 space-y-5">
+                    <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                       CHANGE SESSION VENUE
                     </p>
 
                     <div className="space-y-2">
-                      <h3 className="text-2xl font-display text-[#faf6f0]">
+                      <h3 className="text-2xl font-display text-[#FCFAF7]">
                         {item.venueProposal.sessionTitle}
                       </h3>
-                      <div className="flex items-center gap-3 text-base font-mono text-[#edd2ab]">
+                      <div className="flex items-center gap-3 text-base font-mono text-[#E6C887]">
                         <span>
                           {item.venueProposal.fromVenueName.toUpperCase()}
                         </span>
                         <span>→</span>
-                        <span className="font-semibold text-[#faf6f0]">
+                        <span className="font-semibold text-[#FCFAF7]">
                           {item.venueProposal.toVenueName.toUpperCase()}
                         </span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-[#faf6f0]/70">
+                    <p className="text-xs text-[#FCFAF7]/70">
                       This will update participant-facing event information.
                     </p>
 
@@ -636,7 +636,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                           <button
                             type="button"
                             onClick={() => handleCancelVenueProposal(item.id)}
-                            className="px-4 py-2.5 text-xs border border-[#cf9f5d]/35 text-[#edd2ab] hover:bg-[#24040a] transition-colors cursor-pointer"
+                            className="px-4 py-2.5 text-xs border border-[#E6C887]/35 text-[#E6C887] hover:bg-[#17090C] transition-colors cursor-pointer"
                           >
                             CANCEL
                           </button>
@@ -649,7 +649,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                                 item.venueProposal!
                               )
                             }
-                            className="px-5 py-2.5 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer disabled:opacity-50"
+                            className="px-5 py-2.5 text-xs font-semibold bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer disabled:opacity-50"
                           >
                             {confirmingProposalId === item.id
                               ? 'UPDATING...'
@@ -662,15 +662,15 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
                 {/* STRUCTURED UI: NEXT DESTINATION CARD */}
                 {item.structuredCard === 'NEXT_DESTINATION' && upNext && (
-                  <div className="border border-[#cf9f5d]/40 bg-[#1a0206] p-6 space-y-4">
+                  <div className="border border-[#E6C887]/40 bg-[#120608] p-6 space-y-4">
                     <div className="space-y-1">
-                      <p className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+                      <p className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                         {upNext.title}
                       </p>
-                      <p className="text-sm font-mono text-[#faf6f0]/75 tabular-nums">
+                      <p className="text-sm font-mono text-[#FCFAF7]/75 tabular-nums">
                         {upNext.startTime}
                       </p>
-                      <p className="text-2xl font-display text-[#edd2ab] uppercase pt-1">
+                      <p className="text-2xl font-display text-[#E6C887] uppercase pt-1">
                         {upNext.venueName}
                       </p>
                     </div>
@@ -682,7 +682,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                           onClose();
                           onNavigateVenue();
                         }}
-                        className="px-5 py-2.5 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                        className="px-5 py-2.5 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center gap-2 cursor-pointer"
                       >
                         VIEW VENUE
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -693,14 +693,14 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
 
                 {/* STRUCTURED UI: WHAT CHANGED CARD */}
                 {item.structuredCard === 'WHAT_CHANGED' && updatedSession && (
-                  <div className="border border-[#cf9f5d]/40 bg-[#1a0206] p-6 space-y-4">
-                    <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                  <div className="border border-[#E6C887]/40 bg-[#120608] p-6 space-y-4">
+                    <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                       ONE UPDATE
                     </p>
-                    <h3 className="text-xl font-display text-[#faf6f0]">
+                    <h3 className="text-xl font-display text-[#FCFAF7]">
                       {updatedSession.title}
                     </h3>
-                    <p className="text-sm font-mono text-[#edd2ab]">
+                    <p className="text-sm font-mono text-[#E6C887]">
                       {updatedSession.venueName ? `Current destination · ${updatedSession.venueName}` : 'Destination not assigned'}
                     </p>
                     {onNavigateSchedule && (
@@ -710,7 +710,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                           onClose();
                           onNavigateSchedule();
                         }}
-                        className="px-5 py-2.5 text-xs font-semibold tracking-wider border border-[#cf9f5d]/45 text-[#edd2ab] hover:bg-[#24040a] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                        className="px-5 py-2.5 text-xs font-semibold tracking-wider border border-[#E6C887]/45 text-[#E6C887] hover:bg-[#17090C] transition-colors inline-flex items-center gap-2 cursor-pointer"
                       >
                         OPEN MY DAY
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -729,7 +729,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                           onClose();
                           onNavigateOrganiserApplications();
                         }}
-                        className="px-5 py-2.5 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                        className="px-5 py-2.5 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center gap-2 cursor-pointer"
                       >
                         OPEN APPLICATIONS
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -742,14 +742,14 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
         </div>
 
         {/* COMPOSER FOOTER */}
-        <div className="p-5 border-t border-[#cf9f5d]/20 bg-[#1a0206] space-y-3">
+        <div className="p-5 border-t border-[#E6C887]/20 bg-[#120608] space-y-3">
           {attachedImage && (
-            <div className="flex items-center justify-between text-xs text-[#edd2ab] bg-[#0d0608] px-3 py-2 border border-[#cf9f5d]/30">
+            <div className="flex items-center justify-between text-xs text-[#E6C887] bg-[#080203] px-3 py-2 border border-[#E6C887]/30">
               <span>Image attached</span>
               <button
                 type="button"
                 onClick={() => setAttachedImage(null)}
-                className="text-[#faf6f0]/60 hover:text-[#faf6f0] cursor-pointer"
+                className="text-[#FCFAF7]/60 hover:text-[#FCFAF7] cursor-pointer"
               >
                 Remove
               </button>
@@ -784,7 +784,7 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Attach image"
-                  className="p-2.5 border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] transition-colors cursor-pointer shrink-0"
+                  className="p-2.5 border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] transition-colors cursor-pointer shrink-0"
                 >
                   <ImageIcon className="w-4 h-4" />
                 </button>
@@ -798,8 +798,8 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
                 title="Speak to Auvresence"
                 className={`p-2.5 border transition-colors cursor-pointer shrink-0 ${
                   voiceState === 'LISTENING'
-                    ? 'bg-[#cf9f5d] text-[#0d0608] border-[#cf9f5d]'
-                    : 'border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a]'
+                    ? 'bg-[#E6C887] text-[#080203] border-[#E6C887]'
+                    : 'border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C]'
                 }`}
               >
                 <Mic className="w-4 h-4" />
@@ -813,14 +813,14 @@ export const AskAuvresenceDrawer: React.FC<AskAuvresenceDrawerProps> = ({
               placeholder="Ask about your event..."
               maxLength={500}
               aria-label="Ask about your event"
-              className="min-w-0 flex-1 px-4 py-2.5 text-sm bg-[#0d0608] border border-[#cf9f5d]/35 text-[#faf6f0] placeholder:text-[#faf6f0]/40 focus:outline-none focus:border-[#cf9f5d]"
+              className="min-w-0 flex-1 px-4 py-2.5 text-sm bg-[#080203] border border-[#E6C887]/35 text-[#FCFAF7] placeholder:text-[#FCFAF7]/40 focus:outline-none focus:border-[#E6C887]"
             />
 
             <button
               type="submit"
               aria-label="Send"
               disabled={loading || !questionInput.trim()}
-              className="min-h-11 min-w-11 px-4 py-2.5 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="min-h-11 min-w-11 px-4 py-2.5 text-xs font-semibold bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
             </button>

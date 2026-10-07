@@ -65,12 +65,12 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
   const dbOk = Boolean(health?.databaseReady || health?.database === 'available');
 
   return (
-    <div className="bg-[#1a0206] border-b border-[#cf9f5d]/35 px-6 py-3 text-xs">
+    <div className="bg-[#120608] border-b border-[#E6C887]/35 px-6 py-3 text-xs">
       <div className="max-w-[1280px] mx-auto space-y-3">
         {/* Top Row: Console Surfaces (DEMO RESET / PARTICIPANT / ORGANISER / LIVE / SECURITY / SYSTEM X-RAY) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#cf9f5d]/15 pb-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6C887]/15 pb-2.5">
           <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
-            <span className="tracking-widest text-[#cf9f5d] font-semibold">
+            <span className="tracking-widest text-[#E6C887] font-semibold">
               TECHNOVATE · JUDGE CONSOLE
             </span>
             <span aria-hidden="true" className="text-white/25">
@@ -84,7 +84,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             </span>
             <span
               className={
-                health?.aiConfigured ? 'text-emerald-300' : 'text-[#edd2ab]/75'
+                health?.aiConfigured ? 'text-emerald-300' : 'text-[#E6C887]/75'
               }
             >
               {health?.aiConfigured ? 'AI ✓' : 'AI UNAVAILABLE'}
@@ -95,7 +95,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={onResetGoldenPath}
-              className="px-2.5 py-1 border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
               <RotateCcw className="w-3 h-3" />
               DEMO RESET
@@ -109,8 +109,8 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
               }}
               className={`px-2.5 py-1 transition-colors cursor-pointer whitespace-nowrap ${
                 activeRole === 'PARTICIPANT'
-                  ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                  : 'border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a]'
+                  ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                  : 'border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C]'
               }`}
             >
               PARTICIPANT
@@ -124,8 +124,8 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
               }}
               className={`px-2.5 py-1 transition-colors cursor-pointer whitespace-nowrap ${
                 activeRole === 'ORGANISER'
-                  ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                  : 'border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a]'
+                  ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                  : 'border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C]'
               }`}
             >
               ORGANISER
@@ -134,7 +134,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={() => onNavigateSurface('LIVE')}
-              className="px-2.5 py-1 border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] transition-colors cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] transition-colors cursor-pointer whitespace-nowrap"
             >
               LIVE
             </button>
@@ -142,7 +142,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={() => onNavigateSurface('SECURITY')}
-              className="px-2.5 py-1 border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
               <Shield className="w-3 h-3" />
               SECURITY
@@ -151,7 +151,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={() => onNavigateSurface('ARCHITECTURE')}
-              className="px-2.5 py-1 border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#24040a] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#17090C] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
               <Layers className="w-3 h-3" />
               SYSTEM X-RAY
@@ -170,7 +170,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 text-[#faf6f0]/60 hover:text-[#faf6f0] cursor-pointer"
+              className="p-1 text-[#FCFAF7]/60 hover:text-[#FCFAF7] cursor-pointer"
               aria-label="Close Judge Mode"
             >
               <X className="w-3.5 h-3.5" />
@@ -191,8 +191,8 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
                   title={s.description}
                   className={`px-2 py-1 font-mono text-[11px] transition-colors cursor-pointer whitespace-nowrap ${
                     isCurrent
-                      ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                      : 'bg-[#0d0608]/70 text-[#edd2ab]/75 hover:text-[#faf6f0] border border-[#cf9f5d]/20'
+                      ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                      : 'bg-[#080203]/70 text-[#E6C887]/75 hover:text-[#FCFAF7] border border-[#E6C887]/20'
                   }`}
                 >
                   {s.code}
@@ -205,7 +205,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={onStartTwoMinDemo}
-              className="px-2.5 py-1 font-mono text-[11px] bg-[#24040a] border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#4e0a17] transition-colors cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 font-mono text-[11px] bg-[#17090C] border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#C41224] transition-colors cursor-pointer whitespace-nowrap"
             >
               START 2-MIN DEMO
             </button>
@@ -213,7 +213,7 @@ export const JudgeModeBar: React.FC<JudgeModeBarProps> = ({
             <button
               type="button"
               onClick={onNextStep}
-              className="px-2.5 py-1 font-mono text-[11px] bg-[#cf9f5d] text-[#0d0608] font-semibold hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              className="px-2.5 py-1 font-mono text-[11px] bg-[#E6C887] text-[#080203] font-semibold hover:bg-[#E6C887] transition-colors inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
               NEXT STEP
               <ArrowRight className="w-3 h-3" />

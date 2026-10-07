@@ -40,21 +40,21 @@ export const ActionXRayModal: React.FC<ActionXRayModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div className="w-full max-w-xl bg-[#0d0608] border border-[#cf9f5d]/45 shadow-2xl overflow-hidden">
-        <div className="p-6 bg-[#1a0206] border-b border-[#cf9f5d]/25 flex items-start justify-between gap-4">
+      <div className="w-full max-w-xl bg-[#080203] border border-[#E6C887]/45 shadow-2xl overflow-hidden">
+        <div className="p-6 bg-[#120608] border-b border-[#E6C887]/25 flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono text-[#cf9f5d]">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#E6C887]">
               <Layers className="w-3.5 h-3.5" />
               <span>ACTION ARCHITECTURE · SYSTEM X-RAY</span>
             </div>
-            <h2 className="text-2xl font-display font-semibold text-[#faf6f0]">
+            <h2 className="text-2xl font-display font-semibold text-[#FCFAF7]">
               {trace.title}
             </h2>
-            <p className="text-xs text-[#edd2ab]/80">{trace.subtitle}</p>
+            <p className="text-xs text-[#E6C887]/80">{trace.subtitle}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#faf6f0]/70 hover:text-[#faf6f0] border border-[#cf9f5d]/25 cursor-pointer"
+            className="p-1.5 text-[#FCFAF7]/70 hover:text-[#FCFAF7] border border-[#E6C887]/25 cursor-pointer"
             aria-label="Close System X-Ray"
           >
             <X className="w-4 h-4" />
@@ -69,15 +69,15 @@ export const ActionXRayModal: React.FC<ActionXRayModalProps> = ({
                 <div
                   className={`p-3.5 border transition-all duration-150 flex items-center justify-between gap-4 ${
                     isLit
-                      ? 'bg-[#24040a] border-[#cf9f5d]/50 text-[#faf6f0]'
-                      : 'bg-[#0d0608] border-white/10 text-[#faf6f0]/40'
+                      ? 'bg-[#17090C] border-[#E6C887]/50 text-[#FCFAF7]'
+                      : 'bg-[#080203] border-white/10 text-[#FCFAF7]/40'
                   }`}
                 >
                   <div>
-                    <p className="text-xs font-mono font-semibold text-[#cf9f5d]">
+                    <p className="text-xs font-mono font-semibold text-[#E6C887]">
                       0{idx + 1} · {step.layer}
                     </p>
-                    <p className="text-xs text-[#faf6f0]/85 mt-0.5">
+                    <p className="text-xs text-[#FCFAF7]/85 mt-0.5">
                       {step.detail}
                     </p>
                   </div>
@@ -91,7 +91,7 @@ export const ActionXRayModal: React.FC<ActionXRayModalProps> = ({
                   <div className="flex justify-center py-0.5">
                     <ArrowDown
                       className={`w-3.5 h-3.5 ${
-                        isLit ? 'text-[#cf9f5d]' : 'text-white/15'
+                        isLit ? 'text-[#E6C887]' : 'text-white/15'
                       }`}
                     />
                   </div>
@@ -101,14 +101,14 @@ export const ActionXRayModal: React.FC<ActionXRayModalProps> = ({
           })}
         </div>
 
-        <div className="px-6 py-4 bg-[#1a0206] border-t border-[#cf9f5d]/20 flex items-center justify-between gap-4 text-[11px] text-[#faf6f0]/65">
+        <div className="px-6 py-4 bg-[#120608] border-t border-[#E6C887]/20 flex items-center justify-between gap-4 text-[11px] text-[#FCFAF7]/65">
           <span>
             Explanatory architecture trace of the completed server operation (
             {trace.timestamp}).
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer whitespace-nowrap"
+            className="px-4 py-1.5 text-xs font-semibold bg-[#E6C887] text-[#080203] hover:bg-[#E6C887] transition-colors cursor-pointer whitespace-nowrap"
           >
             Close X-Ray
           </button>

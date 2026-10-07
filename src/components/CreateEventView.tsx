@@ -56,9 +56,9 @@ function listTimezones(): string[] {
 }
 
 const fieldLabel =
-  'block text-[11px] font-mono tracking-[0.28em] uppercase text-[#cf9f5d]';
+  'block text-[11px] font-mono tracking-[0.28em] uppercase text-[#E6C887]';
 const fieldBase =
-  'mt-3 w-full bg-transparent border-0 border-b border-[#cf9f5d]/35 px-0 py-3 text-lg text-[#faf6f0] placeholder:text-[#faf6f0]/55 outline-none focus:border-[#cf9f5d] transition-colors [color-scheme:dark]';
+  'mt-3 w-full bg-transparent border-0 border-b border-[#E6C887]/35 px-0 py-3 text-lg text-[#FCFAF7] placeholder:text-[#FCFAF7]/55 outline-none focus:border-[#E6C887] transition-colors [color-scheme:dark]';
 
 export const CreateEventView: React.FC<CreateEventViewProps> = ({
   getToken,
@@ -154,23 +154,23 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
 
   const err = (k: string) =>
     fieldErrors[k] ? (
-      <p className="mt-2 text-xs text-[#edd2ab]/80" role="alert">
+      <p className="mt-2 text-xs text-[#E6C887]/80" role="alert">
         {fieldErrors[k]}
       </p>
     ) : null;
 
   if (created) return (
     <section className="mx-auto max-w-2xl px-6 py-24 sm:py-32" aria-labelledby="created-title">
-      <p className="text-xs font-mono tracking-[0.3em] text-[#cf9f5d]">EVENT CREATED</p>
+      <p className="text-xs font-mono tracking-[0.3em] text-[#E6C887]">EVENT CREATED</p>
       <h1 id="created-title" className="mt-6 font-display text-5xl sm:text-7xl">{created.title}</h1>
-      <p className="mt-6 text-[#edd2ab] text-xl">Your event is ready to shape.</p>
-      <p className="mt-4 text-[#faf6f0]/65">Build the programme, map your venue, and welcome your people.</p>
+      <p className="mt-6 text-[#E6C887] text-xl">Your event is ready to shape.</p>
+      <p className="mt-4 text-[#FCFAF7]/65">Build the programme, map your venue, and welcome your people.</p>
       <button type="button" className="auv-btn auv-btn-primary mt-10" onClick={() => onCreated(created)}>Enter Studio <ArrowRight className="h-4 w-4" /></button>
     </section>
   );
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-[#0d0608]">
+    <div className="auv-create auv-atmosphere relative min-h-[calc(100vh-4rem)]">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-[480px]"
@@ -183,23 +183,23 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase text-[#faf6f0]/60 hover:text-[#edd2ab] cursor-pointer"
+          className="inline-flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase text-[#FCFAF7]/60 hover:text-[#E6C887] cursor-pointer"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Home
         </button>
 
-        <p className="mt-14 text-[11px] font-mono tracking-[0.4em] text-[#cf9f5d]">
+        <p className="mt-14 text-[11px] font-mono tracking-[0.4em] text-[#E6C887]">
           ORGANISE AN EVENT
         </p>
-        <h1 className="mt-5 font-display text-5xl sm:text-6xl leading-[1.05] tracking-tight text-[#faf6f0]">
+        <h1 className="mt-5 font-display text-5xl sm:text-6xl leading-[1.05] tracking-tight text-[#FCFAF7]">
           What are you bringing to life?
         </h1>
-        <p className="mt-5 max-w-lg text-[#faf6f0]/65">
+        <p className="mt-5 max-w-lg text-[#FCFAF7]/65">
           Start with the essentials. You can shape everything else inside your
           Organiser Studio.
         </p>
 
-        <form onSubmit={submit} noValidate className="mt-14 space-y-8">
+        <form onSubmit={submit} noValidate className="auv-create-form mt-14 space-y-8">
           <p className="create-section-label">01 / IDENTITY</p>
           <div>
             <label htmlFor="ev-title" className={fieldLabel}>
@@ -230,7 +230,7 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
               className={`${fieldBase} appearance-none cursor-pointer`}
             >
               {EVENT_TYPES.map((t) => (
-                <option key={t} value={t} className="bg-[#1a0206]">
+                <option key={t} value={t} className="bg-[#120608]">
                   {t}
                 </option>
               ))}
@@ -301,7 +301,7 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
                 className={`${fieldBase} appearance-none cursor-pointer`}
               >
                 {timezones.map((t) => (
-                  <option key={t} value={t} className="bg-[#1a0206]">
+                  <option key={t} value={t} className="bg-[#120608]">
                     {t.replace(/_/g, ' ')}
                   </option>
                 ))}
@@ -348,7 +348,7 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
             <p
               role="alert"
               data-testid="create-error"
-              className="border-l-2 border-[#cf9f5d] pl-4 text-sm text-[#edd2ab]"
+              className="border-l-2 border-[#E6C887] pl-4 text-sm text-[#E6C887]"
             >
               {error}
             </p>
@@ -359,7 +359,7 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
               type="submit"
               data-testid="create-event-submit"
               disabled={submitting}
-              className="inline-flex items-center gap-3 bg-[#cf9f5d] px-8 py-4 text-xs font-semibold tracking-[0.22em] uppercase text-[#0d0608] hover:bg-[#edd2ab] transition-colors disabled:opacity-60 cursor-pointer"
+              className="inline-flex items-center gap-3 bg-[#E51E2B] px-8 py-4 text-xs font-semibold tracking-[0.22em] uppercase text-[#FCFAF7] hover:bg-[#C41224] transition-colors disabled:opacity-60 cursor-pointer"
             >
               {submitting ? 'Creating…' : 'Create event'}
               {!submitting && <ArrowRight className="h-4 w-4" />}
@@ -368,7 +368,7 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({
               type="button"
               onClick={onCancel}
               disabled={submitting}
-              className="text-xs tracking-[0.22em] uppercase text-[#faf6f0]/55 hover:text-[#faf6f0] cursor-pointer"
+              className="text-xs tracking-[0.22em] uppercase text-[#FCFAF7]/55 hover:text-[#FCFAF7] cursor-pointer"
             >
               Cancel
             </button>

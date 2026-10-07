@@ -681,13 +681,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 space-y-8">
         <div className="space-y-3">
-          <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+          <p className="text-xs font-mono tracking-widest text-[#E6C887]">
             AUVRESENCE / STUDIO
           </p>
-          <h1 className="text-4xl font-display font-normal text-[#faf6f0]">
+          <h1 className="text-4xl font-display font-normal text-[#FCFAF7]">
             You are not an organiser of this event
           </h1>
-          <p className="text-sm text-[#faf6f0]/70 leading-relaxed">
+          <p className="text-sm text-[#FCFAF7]/70 leading-relaxed">
             Organiser Studio is only available to the people who run an event.
             You can organise your own event from Home.
           </p>
@@ -697,7 +697,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           <button
             type="button"
             onClick={onSwitchToParticipantAccount}
-            className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
+            className="px-6 py-3 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
           >
             Back to Home
             <ArrowRight className="w-4 h-4" />
@@ -718,28 +718,28 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
   const upNext = context?.pulse.upNext || null;
 
   return (
-    <div className="studio-shell max-w-[1440px] mx-auto px-5 sm:px-8 py-8 lg:py-10 pb-28 md:pb-16">
+    <div className="auv-studio-surface studio-shell max-w-[1440px] mx-auto px-5 sm:px-8 py-8 lg:py-10 pb-28 md:pb-16">
       {/* STUDIO COMMAND HEADER */}
-      <div className="studio-header border-b border-[#edd2ab]/15 pb-7">
+      <div className="studio-header border-b border-[#E6C887]/15 pb-7">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono tracking-widest">
-            <span className="text-[#cf9f5d]">AUVRESENCE / STUDIO</span>
-            <span aria-hidden="true" className="text-[#faf6f0]/30">
+            <span className="text-[#E6C887]">AUVRESENCE / STUDIO</span>
+            <span aria-hidden="true" className="text-[#FCFAF7]/30">
               ·
             </span>
-            <span className="text-[#edd2ab]">
+            <span className="text-[#E6C887]">
               EVENT OPERATIONS
             </span>
-            <span aria-hidden="true" className="text-[#faf6f0]/30">
+            <span aria-hidden="true" className="text-[#FCFAF7]/30">
               ·
             </span>
             <span className="text-emerald-300 inline-flex items-center gap-1.5">
               {context?.event.status === 'LIVE' ? 'LIVE' : context?.event.status || 'DRAFT'}
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+              <span className={`w-2 h-2 rounded-full inline-block ${context?.event.status === 'LIVE' ? 'bg-emerald-400' : 'bg-[#7D706D]'}`} />
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-display font-normal text-[#faf6f0]">
+          <h1 className="text-3xl sm:text-4xl font-display font-normal text-[#FCFAF7]">
             {context?.event.title ?? 'Organiser Studio'}
           </h1>
         </div>
@@ -768,8 +768,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               aria-current={activeTab === t.id ? 'page' : undefined}
               className={`min-h-11 py-1.5 transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === t.id
-                  ? 'text-[#cf9f5d] border-b border-[#cf9f5d] font-semibold'
-                  : 'text-[#faf6f0]/60 hover:text-[#faf6f0]'
+                  ? 'text-[#E6C887] border-b border-[#E6C887] font-semibold'
+                  : 'text-[#FCFAF7]/60 hover:text-[#FCFAF7]'
               }`}
             >
               {t.label}
@@ -780,25 +780,25 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenAskAuvresence()}
-              className="py-1.5 text-[#edd2ab] hover:text-[#faf6f0] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              className="py-1.5 text-[#E6C887] hover:text-[#FCFAF7] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-              <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#E6C887]" />
               Ask
             </button>
           )}
         </div>
 
-      <div className="studio-workspace">
+      <div className="studio-workspace" data-studio-tab={activeTab}>
 
       {/* CLEAN STATE CONFIRMATION NOTICE */}
       {statusNotice && (
-        <div className="border border-[#cf9f5d]/50 bg-[#1a0206] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="border border-[#E6C887]/50 bg-[#120608] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs font-mono tracking-widest text-[#cf9f5d] font-semibold">
+            <span className="text-xs font-mono tracking-widest text-[#E6C887] font-semibold">
               {statusNotice.title}
             </span>
             {statusNotice.detail && (
-              <span className="text-sm font-mono text-[#faf6f0]">
+              <span className="text-sm font-mono text-[#FCFAF7]">
                 {statusNotice.detail}
               </span>
             )}
@@ -807,14 +807,14 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             <button
               type="button"
               onClick={onSwitchToParticipantAccount}
-              className="text-xs font-medium text-[#edd2ab] hover:text-[#faf6f0] underline cursor-pointer whitespace-nowrap"
+              className="text-xs font-medium text-[#E6C887] hover:text-[#FCFAF7] underline cursor-pointer whitespace-nowrap"
             >
               View in Participant Space →
             </button>
             <button
               type="button"
               onClick={() => setStatusNotice(null)}
-              className="text-xs text-[#faf6f0]/50 hover:text-[#faf6f0] cursor-pointer"
+              className="text-xs text-[#FCFAF7]/50 hover:text-[#FCFAF7] cursor-pointer"
             >
               Dismiss
             </button>
@@ -829,7 +829,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             <p className="text-xs font-mono tracking-widest text-red-300 uppercase">
               COULDN&apos;T COMPLETE ACTION
             </p>
-            <p className="text-xs text-[#faf6f0]/80">{errorBanner}</p>
+            <p className="text-xs text-[#FCFAF7]/80">{errorBanner}</p>
           </div>
           <button
             type="button"
@@ -856,13 +856,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               onClick={() => handleSelectTab('APPLICATIONS')}
               className="text-left group cursor-pointer space-y-2"
             >
-              <p className="text-5xl sm:text-6xl font-display font-normal text-[#faf6f0] tabular-nums group-hover:text-[#edd2ab] transition-colors">
+              <p className="text-5xl sm:text-6xl font-display font-normal text-[#FCFAF7] tabular-nums group-hover:text-[#E6C887] transition-colors">
                 {String(dashboard?.stats.totalApplications ?? 0).padStart(
                   2,
                   '0'
                 )}
               </p>
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 APPLICATIONS
               </p>
             </button>
@@ -875,7 +875,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               }}
               className="text-left group cursor-pointer space-y-2"
             >
-              <p className="text-5xl sm:text-6xl font-display font-normal text-[#faf6f0] tabular-nums group-hover:text-[#edd2ab] transition-colors">
+              <p className="text-5xl sm:text-6xl font-display font-normal text-[#FCFAF7] tabular-nums group-hover:text-[#E6C887] transition-colors">
                 {String(
                   dashboard?.stats.acceptedParticipants ??
                     dashboard?.stats.accepted ??
@@ -895,67 +895,67 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               }}
               className="text-left group cursor-pointer space-y-2"
             >
-              <p className="text-5xl sm:text-6xl font-display font-normal text-[#faf6f0] tabular-nums group-hover:text-[#edd2ab] transition-colors">
+              <p className="text-5xl sm:text-6xl font-display font-normal text-[#FCFAF7] tabular-nums group-hover:text-[#E6C887] transition-colors">
                 {String(dashboard?.stats.underReview ?? 0).padStart(2, '0')}
               </p>
-              <p className="text-xs font-mono tracking-widest text-[#edd2ab]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 PENDING
               </p>
             </button>
 
             <div className="space-y-2">
-              <p className="text-5xl sm:text-6xl font-display font-normal text-[#faf6f0] tabular-nums">
+              <p className="text-5xl sm:text-6xl font-display font-normal text-[#FCFAF7] tabular-nums">
                 {String(dashboard?.stats.activeCredentials ?? 0).padStart(
                   2,
                   '0'
                 )}
               </p>
-              <p className="text-xs font-mono tracking-widest text-[#faf6f0]/60">
+              <p className="text-xs font-mono tracking-widest text-[#FCFAF7]/60">
                 ACTIVE PASSES
               </p>
             </div>
           </section>
 
           {/* SPLIT COMMAND SURFACE: TODAY TIMELINE + PENDING QUEUE */}
-          <section className="grid lg:grid-cols-12 gap-12 pt-10 border-t border-[#cf9f5d]/20 items-start">
+          <section className="grid lg:grid-cols-12 gap-12 pt-10 border-t border-[#E6C887]/20 items-start">
             {/* Left 7 Columns: TODAY Timeline */}
             <div className="lg:col-span-7 space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                <span className="text-xs font-mono tracking-widest text-[#E6C887]">
                   TODAY
                 </span>
                 <button
                   type="button"
                   onClick={() => handleSelectTab('SCHEDULE')}
-                  className="text-xs text-[#edd2ab]/75 hover:text-[#faf6f0] cursor-pointer"
+                  className="text-xs text-[#E6C887]/75 hover:text-[#FCFAF7] cursor-pointer"
                 >
                   Open full schedule →
                 </button>
               </div>
 
-              <div className="divide-y divide-[#cf9f5d]/15 border-t border-[#cf9f5d]/15">
+              <div className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">
                 {context?.sessions.map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => openSessionSheet(s)}
-                    className="w-full py-5 flex items-baseline justify-between gap-4 text-left hover:bg-[#1a0206]/60 px-3 -mx-3 transition-colors cursor-pointer"
+                    className="w-full py-5 flex items-baseline justify-between gap-4 text-left hover:bg-[#120608]/60 px-3 -mx-3 transition-colors cursor-pointer"
                   >
                     <div className="flex items-baseline gap-6">
-                      <span className="text-sm font-mono text-[#cf9f5d] tabular-nums w-14 shrink-0">
+                      <span className="text-sm font-mono text-[#E6C887] tabular-nums w-14 shrink-0">
                         {s.startTime}
                       </span>
                       <div>
-                        <p className="text-xl font-display text-[#faf6f0]">
+                        <p className="text-xl font-display text-[#FCFAF7]">
                           {s.title}
                         </p>
-                        <p className="text-xs font-mono text-[#edd2ab] uppercase mt-0.5">
+                        <p className="text-xs font-mono text-[#E6C887] uppercase mt-0.5">
                           {s.venueName}
                         </p>
                       </div>
                     </div>
 
-                    <span className="text-xs font-mono text-[#faf6f0]/50 hover:text-[#cf9f5d] whitespace-nowrap">
+                    <span className="text-xs font-mono text-[#FCFAF7]/50 hover:text-[#E6C887] whitespace-nowrap">
                       Change location →
                     </span>
                   </button>
@@ -964,23 +964,23 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             </div>
 
             {/* Right 5 Columns: Quick Venue Move & Pending Review */}
-            <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#cf9f5d]/15 lg:pl-10">
+            <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#E6C887]/15 lg:pl-10">
 {/* Pending Applications Quick Access */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                  <span className="text-xs font-mono tracking-widest text-[#E6C887]">
                     RECENT APPLICATIONS
                   </span>
                   <button
                     type="button"
                     onClick={() => handleSelectTab('APPLICATIONS')}
-                    className="text-xs text-[#edd2ab]/75 hover:text-[#faf6f0] cursor-pointer"
+                    className="text-xs text-[#E6C887]/75 hover:text-[#FCFAF7] cursor-pointer"
                   >
                     View all →
                   </button>
                 </div>
 
-                <div className="divide-y divide-[#cf9f5d]/15 border-t border-[#cf9f5d]/15">
+                <div className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">
                   {(dashboard?.applications || []).slice(0, 4).map((app) => (
                     <button
                       key={app.id}
@@ -989,13 +989,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         setSelectedAppId(app.id);
                         handleSelectTab('APPLICATIONS');
                       }}
-                      className="w-full py-3.5 flex items-center justify-between gap-4 text-left hover:bg-[#1a0206]/60 px-2 -mx-2 transition-colors cursor-pointer"
+                      className="w-full py-3.5 flex items-center justify-between gap-4 text-left hover:bg-[#120608]/60 px-2 -mx-2 transition-colors cursor-pointer"
                     >
                       <div>
-                        <p className="text-sm font-medium text-[#faf6f0]">
+                        <p className="text-sm font-medium text-[#FCFAF7]">
                           {app.applicantName}
                         </p>
-                        <p className="text-xs text-[#faf6f0]/55">
+                        <p className="text-xs text-[#FCFAF7]/55">
                           {app.category}
                         </p>
                       </div>
@@ -1004,8 +1004,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                           app.status === 'ACCEPTED'
                             ? 'text-emerald-300'
                             : app.status === 'UNDER_REVIEW'
-                            ? 'text-[#cf9f5d]'
-                            : 'text-[#faf6f0]/50'
+                            ? 'text-[#E6C887]'
+                            : 'text-[#FCFAF7]/50'
                         }`}
                       >
                         {app.status === 'UNDER_REVIEW' ? 'PENDING' : app.status}
@@ -1026,16 +1026,16 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         <div className="space-y-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 APPLICATIONS
               </p>
-              <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+              <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
                 Participant Review
               </h2>
             </div>
 
             {/* Clean Segmented Filter */}
-            <div className="flex items-center gap-1 p-1 bg-[#1a0206] border border-[#cf9f5d]/25">
+            <div className="flex items-center gap-1 p-1 bg-[#120608] border border-[#E6C887]/25">
               {[
                 { id: 'ALL', label: 'All' },
                 { id: 'UNDER_REVIEW', label: 'Pending' },
@@ -1048,8 +1048,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   onClick={() => setAppFilter(f.id as any)}
                   className={`px-3 py-1.5 text-xs transition-colors cursor-pointer whitespace-nowrap ${
                     appFilter === f.id
-                      ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                      : 'text-[#edd2ab]/75 hover:text-[#faf6f0]'
+                      ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                      : 'text-[#E6C887]/75 hover:text-[#FCFAF7]'
                   }`}
                 >
                   {f.label}
@@ -1060,23 +1060,23 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
           {loading && !dashboard ? (
             <div className="space-y-3">
-              <div className="h-12 bg-[#1a0206] animate-pulse" />
-              <div className="h-12 bg-[#1a0206] animate-pulse" />
-              <div className="h-12 bg-[#1a0206] animate-pulse" />
+              <div className="h-12 bg-[#120608] animate-pulse" />
+              <div className="h-12 bg-[#120608] animate-pulse" />
+              <div className="h-12 bg-[#120608] animate-pulse" />
             </div>
           ) : filteredApplications.length === 0 ? (
-            <div className="border border-[#cf9f5d]/20 bg-[#1a0206]/50 p-10 text-center space-y-2">
-              <p className="text-lg font-display text-[#faf6f0]">
+            <div className="border border-[#E6C887]/20 bg-[#120608]/50 p-10 text-center space-y-2">
+              <p className="text-lg font-display text-[#FCFAF7]">
                 No applications match this view.
               </p>
             </div>
           ) : (
             <>
               {/* DESKTOP WORKFLOW TABLE */}
-              <div className="hidden md:block border-t border-[#cf9f5d]/25">
+              <div className="hidden md:block border-t border-[#E6C887]/25">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-[#cf9f5d]/20 text-[11px] font-mono tracking-widest text-[#edd2ab]/70 uppercase">
+                    <tr className="border-b border-[#E6C887]/20 text-[11px] font-mono tracking-widest text-[#E6C887]/70 uppercase">
                       <th className="py-3.5 pr-4">Name</th>
                       <th className="py-3.5 px-4">Programme</th>
                       <th className="py-3.5 px-4">Institution</th>
@@ -1084,7 +1084,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       <th className="py-3.5 pl-4 text-right">Submitted</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#cf9f5d]/15 text-sm">
+                  <tbody className="divide-y divide-[#E6C887]/15 text-sm">
                     {filteredApplications.map((app) => {
                       const isSelected = selectedAppId === app.id;
                       return (
@@ -1093,17 +1093,17 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                           onClick={() => setSelectedAppId(app.id)}
                           className={`transition-colors cursor-pointer ${
                             isSelected
-                              ? 'bg-[#24040a]'
-                              : 'hover:bg-[#1a0206]/80'
+                              ? 'bg-[#17090C]'
+                              : 'hover:bg-[#120608]/80'
                           }`}
                         >
-                          <td className="py-4 pr-4 font-medium text-[#faf6f0]">
+                          <td className="py-4 pr-4 font-medium text-[#FCFAF7]">
                             <button type="button" className="text-left min-h-11 focus-visible:underline" onClick={() => setSelectedAppId(app.id)}>{app.applicantName}</button>
                           </td>
-                          <td className="py-4 px-4 text-[#faf6f0]/80">
+                          <td className="py-4 px-4 text-[#FCFAF7]/80">
                             {app.category}
                           </td>
-                          <td className="py-4 px-4 text-[#faf6f0]/65">
+                          <td className="py-4 px-4 text-[#FCFAF7]/65">
                             {app.institution}
                           </td>
                           <td className="py-4 px-4 font-mono text-xs">
@@ -1112,8 +1112,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                                 app.status === 'ACCEPTED'
                                   ? 'text-emerald-300 font-semibold'
                                   : app.status === 'UNDER_REVIEW'
-                                  ? 'text-[#cf9f5d] font-semibold'
-                                  : 'text-[#faf6f0]/50'
+                                  ? 'text-[#E6C887] font-semibold'
+                                  : 'text-[#FCFAF7]/50'
                               }
                             >
                               {app.status === 'UNDER_REVIEW'
@@ -1121,7 +1121,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                                 : app.status}
                             </span>
                           </td>
-                          <td className="py-4 pl-4 text-right font-mono text-xs text-[#faf6f0]/60 tabular-nums">
+                          <td className="py-4 pl-4 text-right font-mono text-xs text-[#FCFAF7]/60 tabular-nums">
                             {app.createdAt
                               ? new Date(app.createdAt).toLocaleDateString(
                                   'en-GB',
@@ -1140,7 +1140,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               </div>
 
               {/* MOBILE TOUCH-FRIENDLY APPLICATION LIST */}
-              <div className="md:hidden divide-y divide-[#cf9f5d]/20 border-t border-[#cf9f5d]/20">
+              <div className="md:hidden divide-y divide-[#E6C887]/20 border-t border-[#E6C887]/20">
                 {filteredApplications.map((app) => (
                   <button
                     key={app.id}
@@ -1149,10 +1149,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     className="w-full py-4 text-left flex items-center justify-between gap-4 cursor-pointer"
                   >
                     <div className="space-y-1">
-                      <p className="text-base font-medium text-[#faf6f0]">
+                      <p className="text-base font-medium text-[#FCFAF7]">
                         {app.applicantName}
                       </p>
-                      <p className="text-xs text-[#faf6f0]/65">
+                      <p className="text-xs text-[#FCFAF7]/65">
                         {app.category} · {app.institution}
                       </p>
                     </div>
@@ -1161,8 +1161,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         app.status === 'ACCEPTED'
                           ? 'text-emerald-300 font-semibold'
                           : app.status === 'UNDER_REVIEW'
-                          ? 'text-[#cf9f5d] font-semibold'
-                          : 'text-[#faf6f0]/50'
+                          ? 'text-[#E6C887] font-semibold'
+                          : 'text-[#FCFAF7]/50'
                       }`}
                     >
                       {app.status === 'UNDER_REVIEW' ? 'PENDING' : app.status}
@@ -1185,10 +1185,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         <div className="space-y-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 SCHEDULE
               </p>
-              <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+              <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
                 Programme & Venue Assignment
               </h2>
             </div>
@@ -1196,39 +1196,39 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 </div>
 
           {context && <SessionComposer context={context} token={authToken} onSaved={onRefreshContext} />}
-          {!context?.sessions.length && <p className="text-sm text-[#faf6f0]/60">No sessions yet. Add the first programme moment.</p>}
-          <div className="border-t border-[#cf9f5d]/20 divide-y divide-[#cf9f5d]/15">
+          {!context?.sessions.length && <p className="text-sm text-[#FCFAF7]/60">No sessions yet. Add the first programme moment.</p>}
+          <div className="border-t border-[#E6C887]/20 divide-y divide-[#E6C887]/15">
             {context?.sessions.map((s) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => openSessionSheet(s)}
-                className="w-full py-7 grid md:grid-cols-12 gap-6 items-baseline text-left hover:bg-[#1a0206]/60 px-4 -mx-4 transition-colors cursor-pointer"
+                className="w-full py-7 grid md:grid-cols-12 gap-6 items-baseline text-left hover:bg-[#120608]/60 px-4 -mx-4 transition-colors cursor-pointer"
               >
-                <div className="md:col-span-3 font-mono text-xl text-[#faf6f0] tabular-nums">
+                <div className="md:col-span-3 font-mono text-xl text-[#FCFAF7] tabular-nums">
                   {s.startTime}{' '}
-                  <span className="text-xs text-[#faf6f0]/45">
+                  <span className="text-xs text-[#FCFAF7]/45">
                     – {s.endTime}
                   </span>
                 </div>
 
                 <div className="md:col-span-5 space-y-1">
-                  <h3 className="text-2xl font-display text-[#faf6f0]">
+                  <h3 className="text-2xl font-display text-[#FCFAF7]">
                     {s.title}
                   </h3>
-                  <p className="text-xs text-[#faf6f0]/65">{s.description}</p>
+                  <p className="text-xs text-[#FCFAF7]/65">{s.description}</p>
                 </div>
 
                 <div className="md:col-span-4 flex md:justify-end items-center gap-6">
                   <div className="text-right">
-                    <p className="text-sm font-mono font-semibold text-[#edd2ab] uppercase">
+                    <p className="text-sm font-mono font-semibold text-[#E6C887] uppercase">
                       {s.venueName}
                     </p>
-                    <p className="text-[11px] font-mono text-[#faf6f0]/50">
+                    <p className="text-[11px] font-mono text-[#FCFAF7]/50">
                       {s.venueFloor}
                     </p>
                   </div>
-                  <span className="text-xs font-mono text-[#cf9f5d] whitespace-nowrap">
+                  <span className="text-xs font-mono text-[#E6C887] whitespace-nowrap">
                     Edit →
                   </span>
                 </div>
@@ -1243,16 +1243,20 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
       {/* =================================================================== */}
       {activeTab === 'VENUES' && (
         <div className="space-y-12">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#cf9f5d]/20 pb-6">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E6C887]/20 pb-6">
             <div className="space-y-1">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 SPATIAL VENUE STUDIO
               </p>
-              <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+              <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
                 {context?.event.venueName || 'Your event needs a place'}
               </h2>
+              <p className="text-sm text-[#B8ADAA]">Teach Auvresence your venue.</p>
+              <div className="auv-venue-guide" aria-label="Venue workflow">
+                <span>Venue</span><span>Floors</span><span>Places</span><span>Connections</span><span>Routes</span>
+              </div>
               {context?.event.venueAddress && (
-                <p className="text-xs font-mono text-[#edd2ab]/75">
+                <p className="text-xs font-mono text-[#E6C887]/75">
                   {context.event.venueAddress}
                 </p>
               )}
@@ -1275,8 +1279,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   }}
                   className={`px-4 py-2 text-xs font-mono uppercase transition-colors cursor-pointer ${
                     studioFloorName === fl
-                      ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                      : 'border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#1a0206]'
+                      ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                      : 'border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#120608]'
                   }`}
                 >
                   {fl}
@@ -1313,10 +1317,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
           {(context?.floors || []).length === 0 && (
             <div className="max-w-xl py-16 space-y-3">
-              <h3 className="text-2xl font-display text-[#faf6f0]">
+              <h3 className="text-2xl font-display text-[#FCFAF7]">
                 This venue is waiting to be mapped.
               </h3>
-              <p className="text-sm text-[#faf6f0]/65">
+              <p className="text-sm text-[#FCFAF7]/65">
                 Add the first floor above, using whatever name your venue
                 uses. Places and routes are drawn on floors you create.
               </p>
@@ -1331,10 +1335,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             <div className="lg:col-span-7 space-y-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <span className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+                  <span className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                     {studioFloorName} · INTERACTIVE FLOORPLATE
                   </span>
-                  <p className="text-xs text-[#faf6f0]/60">
+                  <p className="text-xs text-[#FCFAF7]/60">
                     {isRecordingPath
                       ? 'Click to sketch a corridor. This is not GPS tracking; canvas distances are estimates.'
                       : 'Click anywhere on the floor canvas to set coordinates for a new location.'}
@@ -1352,7 +1356,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         setRecordedPoints(flObj?.recordedPath || []);
                         setIsRecordingPath(true);
                       }}
-                      className="px-4 py-2 text-xs font-mono border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] cursor-pointer"
+                      className="px-4 py-2 text-xs font-mono border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] cursor-pointer"
                     >
                       Draw-to-Map Path
                     </button>
@@ -1361,7 +1365,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setRecordedPoints([])}
-                        className="px-3 py-2 text-xs font-mono border border-[#cf9f5d]/30 text-[#faf6f0]/70 hover:text-[#faf6f0] cursor-pointer"
+                        className="px-3 py-2 text-xs font-mono border border-[#E6C887]/30 text-[#FCFAF7]/70 hover:text-[#FCFAF7] cursor-pointer"
                       >
                         Clear
                       </button>
@@ -1369,7 +1373,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         type="button"
                         disabled={savingFloorPath}
                         onClick={handleSaveFloorPath}
-                        className="px-4 py-2 text-xs font-mono font-semibold bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] cursor-pointer"
+                        className="px-4 py-2 text-xs font-mono font-semibold bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] cursor-pointer"
                       >
                         {savingFloorPath ? 'Saving...' : 'Save Path'}
                       </button>
@@ -1403,7 +1407,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     setNewPoiY(y);
                   }
                 }}
-                className="relative w-full h-[360px] bg-[#130307] border border-[#cf9f5d]/30 overflow-hidden cursor-crosshair select-none"
+                className="auv-spatial-canvas relative w-full h-[360px] bg-[#0A0204] border border-[#E6C887]/30 overflow-hidden cursor-crosshair select-none"
               >
                 <svg
                   className="absolute inset-0 w-full h-full"
@@ -1438,7 +1442,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   ).length > 1 && (
                     <polyline
                       fill="none"
-                      stroke="#cf9f5d"
+                      stroke="#E6C887"
                       strokeWidth="0.9"
                       strokeDasharray="2,1"
                       points={(isRecordingPath
@@ -1459,8 +1463,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     style={{ left: `${newPoiX}%`, top: `${newPoiY}%` }}
                     className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                   >
-                    <div className="w-5 h-5 rounded-full border border-dashed border-[#cf9f5d] flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#cf9f5d]" />
+                    <div className="w-5 h-5 rounded-full border border-dashed border-[#E6C887] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#E6C887]" />
                     </div>
                   </div>
                 )}
@@ -1478,13 +1482,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none"
                     >
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[#0d0608] ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[#080203] ${
                           v.operationalStatus !== 'OPEN'
                             ? 'bg-red-800 border border-red-400'
-                            : 'bg-[#cf9f5d] ring-2 ring-[#cf9f5d]/25'
+                            : 'bg-[#E6C887] ring-2 ring-[#E6C887]/25'
                         }`}
                       ><PoiIcon type={v.poiType} /></div>
-                      <span className="mt-1 px-1.5 py-0.5 text-[10px] font-mono bg-[#0d0608]/90 text-[#faf6f0] border border-[#cf9f5d]/30 whitespace-nowrap">
+                      <span className="mt-1 px-1.5 py-0.5 text-[10px] font-mono bg-[#080203]/90 text-[#FCFAF7] border border-[#E6C887]/30 whitespace-nowrap">
                         {v.name}
                       </span>
                     </div>
@@ -1493,10 +1497,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
               {/* Existing Floor POIs with Status Toggle */}
               <div className="space-y-4">
-                <p className="text-xs font-mono tracking-widest text-[#cf9f5d] uppercase">
+                <p className="text-xs font-mono tracking-widest text-[#E6C887] uppercase">
                   LOCATIONS & AMENITIES ({context?.venues.length || 0})
                 </p>
-                <div className="divide-y divide-[#cf9f5d]/15 border-t border-[#cf9f5d]/15">
+                <div className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">
                   {context?.venues.map((v) => (
                     <div
                       key={v.id}
@@ -1504,17 +1508,17 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     >
                       <div>
                         <div className="flex items-center gap-3">
-                          <span className="text-base font-display text-[#faf6f0] uppercase">
+                          <span className="text-base font-display text-[#FCFAF7] uppercase">
                             {v.name}
                           </span>
-                          <span className="text-xs font-mono text-[#cf9f5d]">
+                          <span className="text-xs font-mono text-[#E6C887]">
                             {v.floor}
                           </span>
-                          <span className="text-[11px] font-mono text-[#edd2ab]/70 uppercase">
+                          <span className="text-[11px] font-mono text-[#E6C887]/70 uppercase">
                             {v.poiType.replace('_', ' ')}
                           </span>
                         </div>
-                        <p className="text-xs text-[#faf6f0]/55">{v.zone}</p>
+                        <p className="text-xs text-[#FCFAF7]/55">{v.zone}</p>
                       </div>
 
                       <div className="flex items-center gap-4">
@@ -1530,7 +1534,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleToggleVenueStatus(v)}
-                          className="px-3 py-1.5 text-xs font-mono border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#1a0206] cursor-pointer"
+                          className="px-3 py-1.5 text-xs font-mono border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#120608] cursor-pointer"
                         >
                           {v.operationalStatus === 'OPEN'
                             ? 'Mark Unavailable'
@@ -1544,44 +1548,44 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             </div>
 
             {/* Right 5 Columns: Add Location / Amenity + Connect Pathway */}
-            <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#cf9f5d]/15 lg:pl-10">
+            <div className="lg:col-span-5 space-y-10 lg:border-l lg:border-[#E6C887]/15 lg:pl-10">
               <form onSubmit={handleCreatePoi} className="space-y-5">
                 <div className="space-y-1">
-                  <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                  <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                     ADD POINT OF INTEREST
                   </p>
-                  <h3 className="text-2xl font-display text-[#faf6f0]">
+                  <h3 className="text-2xl font-display text-[#FCFAF7]">
                     New Room, Amenity or Connector
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-xs text-[#edd2ab]">Name</label>
+                    <label className="block text-xs text-[#E6C887]">Name</label>
                     <input
                       type="text"
                       required
                       value={newPoiName}
                       onChange={(e) => setNewPoiName(e.target.value)}
                       placeholder="e.g., Seminar Hall B"
-                      className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                      className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs text-[#edd2ab]">Zone</label>
+                    <label className="block text-xs text-[#E6C887]">Zone</label>
                     <input
                       type="text"
                       value={newPoiZone}
                       onChange={(e) => setNewPoiZone(e.target.value)}
                       placeholder="e.g., East Wing"
-                      className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                      className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-xs text-[#edd2ab]">Type</label>
+                    <label className="block text-xs text-[#E6C887]">Type</label>
                     <select
                       value={newPoiType}
                       onChange={(e) => {
@@ -1605,7 +1609,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                           setNewPoiCategory('EVENT');
                         }
                       }}
-                      className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                      className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                     >
                       <option value="ROOM">Session Room</option>
                       <option value="HALL">Main Hall / Auditorium</option>
@@ -1620,17 +1624,17 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs text-[#edd2ab]">
+                    <label className="block text-xs text-[#E6C887]">
                       Coordinates ({studioFloorName})
                     </label>
-                    <div className="px-3 py-2.5 text-xs font-mono bg-[#1a0206] border border-[#cf9f5d]/25 text-[#edd2ab] tabular-nums">
+                    <div className="px-3 py-2.5 text-xs font-mono bg-[#120608] border border-[#E6C887]/25 text-[#E6C887] tabular-nums">
                       X: {newPoiX}% · Y: {newPoiY}%
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs text-[#edd2ab]">
+                  <label className="block text-xs text-[#E6C887]">
                     Description
                   </label>
                   <input
@@ -1638,16 +1642,16 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     value={newPoiDesc}
                     onChange={(e) => setNewPoiDesc(e.target.value)}
                     placeholder="Brief guidance for participants..."
-                    className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   />
                 </div>
 
-                <label className="flex items-center gap-2.5 text-xs text-[#edd2ab] cursor-pointer">
+                <label className="flex items-center gap-2.5 text-xs text-[#E6C887] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={newPoiAccessible}
                     onChange={(e) => setNewPoiAccessible(e.target.checked)}
-                    className="accent-[#cf9f5d]"
+                    className="accent-[#E6C887]"
                   />
                   Step-free / wheelchair accessible
                 </label>
@@ -1655,7 +1659,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 <button
                   type="submit"
                   disabled={creatingPoi}
-                  className="px-6 py-3 text-xs font-semibold tracking-widest bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-6 py-3 text-xs font-semibold tracking-widest bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {creatingPoi ? 'ADDING...' : `ADD TO ${studioFloorName.toUpperCase()}`}
                 </button>
@@ -1664,16 +1668,16 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               {/* Connect Pathway Edge */}
               <form
                 onSubmit={handleCreateEdge}
-                className="pt-8 border-t border-[#cf9f5d]/15 space-y-4"
+                className="pt-8 border-t border-[#E6C887]/15 space-y-4"
               >
-                <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                   CONNECT WAYFINDING PATHWAY
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <select
                     value={edgeFromId}
                     onChange={(e) => setEdgeFromId(Number(e.target.value))}
-                    className="px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   >
                     <option value={0}>From location...</option>
                     {context?.venues.map((v) => (
@@ -1685,7 +1689,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   <select
                     value={edgeToId}
                     onChange={(e) => setEdgeToId(Number(e.target.value))}
-                    className="px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   >
                     <option value={0}>To location...</option>
                     {context?.venues.map((v) => (
@@ -1697,7 +1701,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-xs text-[#edd2ab]">
+                  <div className="flex items-center gap-2 text-xs text-[#E6C887]">
                     <span>Distance (m):</span>
                     <input
                       type="number"
@@ -1705,15 +1709,15 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       max={1000}
                       value={edgeDist}
                       onChange={(e) => setEdgeDist(Number(e.target.value))}
-                      className="w-20 px-2.5 py-1.5 text-xs font-mono bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                      className="w-20 px-2.5 py-1.5 text-xs font-mono bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                     />
                   </div>
-                  <label className="flex items-center gap-2 text-xs text-[#edd2ab] cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs text-[#E6C887] cursor-pointer">
                     <input
                       type="checkbox"
                       checked={edgeAccessible}
                       onChange={(e) => setEdgeAccessible(e.target.checked)}
-                      className="accent-[#cf9f5d]"
+                      className="accent-[#E6C887]"
                     />
                     Step-free
                   </label>
@@ -1722,7 +1726,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 <button
                   type="submit"
                   disabled={creatingEdge || !edgeFromId || !edgeToId}
-                  className="px-5 py-2.5 text-xs font-mono border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] cursor-pointer disabled:opacity-40"
+                  className="px-5 py-2.5 text-xs font-mono border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] cursor-pointer disabled:opacity-40"
                 >
                   {creatingEdge ? 'CONNECTING...' : 'CONNECT LOCATIONS'}
                 </button>
@@ -1737,7 +1741,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
       {/* =================================================================== */}
       {activeTab === 'LIVE' && (
         <div className="space-y-14">
-          <div className="grid md:grid-cols-3 gap-10 border-b border-[#cf9f5d]/20 pb-12">
+          <div className="grid md:grid-cols-3 gap-10 border-b border-[#E6C887]/20 pb-12">
             {/* LIVE NOW */}
             <div className="space-y-3">
               <p className="text-xs font-mono tracking-widest text-emerald-300">
@@ -1745,63 +1749,63 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               </p>
               {happeningNow ? (
                 <>
-                  <h2 className="text-3xl font-display text-[#faf6f0]">
+                  <h2 className="text-3xl font-display text-[#FCFAF7]">
                     {happeningNow.title}
                   </h2>
-                  <p className="text-base font-mono text-[#edd2ab] uppercase">
+                  <p className="text-base font-mono text-[#E6C887] uppercase">
                     {happeningNow.venueName}
                   </p>
-                  <p className="text-xs font-mono text-[#faf6f0]/55 tabular-nums">
+                  <p className="text-xs font-mono text-[#FCFAF7]/55 tabular-nums">
                     {happeningNow.startTime} – {happeningNow.endTime}
                   </p>
                 </>
               ) : (
-                <p className="text-lg font-display text-[#faf6f0]/60">
+                <p className="text-lg font-display text-[#FCFAF7]/60">
                   No active session
                 </p>
               )}
             </div>
 
             {/* UP NEXT */}
-            <div className="space-y-3 md:border-l md:border-[#cf9f5d]/15 md:pl-8">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+            <div className="space-y-3 md:border-l md:border-[#E6C887]/15 md:pl-8">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 UP NEXT
               </p>
               {upNext ? (
                 <>
-                  <h2 className="text-3xl font-display text-[#faf6f0]">
+                  <h2 className="text-3xl font-display text-[#FCFAF7]">
                     {upNext.title}
                   </h2>
-                  <p className="text-base font-mono text-[#edd2ab] uppercase">
+                  <p className="text-base font-mono text-[#E6C887] uppercase">
                     {upNext.venueName}
                   </p>
-                  <p className="text-xs font-mono text-[#faf6f0]/55 tabular-nums">
+                  <p className="text-xs font-mono text-[#FCFAF7]/55 tabular-nums">
                     {upNext.startTime} – {upNext.endTime}
                   </p>
                 </>
               ) : (
-                <p className="text-lg font-display text-[#faf6f0]/60">
+                <p className="text-lg font-display text-[#FCFAF7]/60">
                   No upcoming session is marked
                 </p>
               )}
             </div>
 
             {/* LATEST UPDATE */}
-            <div className="space-y-3 md:border-l md:border-[#cf9f5d]/15 md:pl-8">
-              <p className="text-xs font-mono tracking-widest text-[#edd2ab]/75">
+            <div className="space-y-3 md:border-l md:border-[#E6C887]/15 md:pl-8">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]/75">
                 LATEST UPDATE
               </p>
               {context?.announcements[0] ? (
                 <>
-                  <h2 className="text-2xl font-display text-[#faf6f0]">
+                  <h2 className="text-2xl font-display text-[#FCFAF7]">
                     {context.announcements[0].title}
                   </h2>
-                  <p className="text-xs text-[#faf6f0]/65 line-clamp-2">
+                  <p className="text-xs text-[#FCFAF7]/65 line-clamp-2">
                     {context.announcements[0].body}
                   </p>
                 </>
               ) : (
-                <p className="text-sm text-[#faf6f0]/60">
+                <p className="text-sm text-[#FCFAF7]/60">
                   No updates published yet.
                 </p>
               )}
@@ -1810,14 +1814,14 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
           {/* QUICK ACTIONS */}
           <div className="space-y-5">
-            <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+            <p className="text-xs font-mono tracking-widest text-[#E6C887]">
               QUICK ACTIONS
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <button
                 type="button"
                 onClick={() => handleSelectTab('SCHEDULE')}
-                className="px-6 py-3.5 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer whitespace-nowrap"
+                className="px-6 py-3.5 text-xs font-semibold tracking-wider bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer whitespace-nowrap"
               >
                 Open schedule
               </button>
@@ -1825,7 +1829,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               <button
                 type="button"
                 onClick={() => handleSelectTab('ANNOUNCEMENTS')}
-                className="px-6 py-3.5 text-xs font-medium border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] transition-colors cursor-pointer whitespace-nowrap"
+                className="px-6 py-3.5 text-xs font-medium border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] transition-colors cursor-pointer whitespace-nowrap"
               >
                 Publish update
               </button>
@@ -1833,7 +1837,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               <button
                 type="button"
                 onClick={() => handleSelectTab('APPLICATIONS')}
-                className="px-6 py-3.5 text-xs font-medium border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#1a0206] transition-colors cursor-pointer whitespace-nowrap"
+                className="px-6 py-3.5 text-xs font-medium border border-[#E6C887]/40 text-[#E6C887] hover:bg-[#120608] transition-colors cursor-pointer whitespace-nowrap"
               >
                 View participants
               </button>
@@ -1844,28 +1848,28 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
       {activeTab === 'CREDENTIALS' && (
         <section>
-          <p className="text-xs font-mono tracking-[.2em] text-[#cf9f5d]">CREDENTIALS</p>
+          <p className="text-xs font-mono tracking-[.2em] text-[#E6C887]">CREDENTIALS</p>
           <h2 className="font-display text-4xl mt-4 mb-8">Identity, issued.</h2>
-          {(dashboard?.applications || []).some(app => app.credential) ? <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">{dashboard?.applications.filter(app => app.credential).map(app => <li key={app.id} className="py-5 flex flex-wrap justify-between items-center gap-4"><div><p className="text-base">{app.applicantName}</p><p className="text-xs text-[#faf6f0]/60 mt-2">{app.credential!.participantCode} · {app.credential!.roleCategory}</p></div><div className="flex items-center gap-5"><span className="text-xs font-mono text-[#edd2ab]">{app.credential!.status}</span><button type="button" className="auv-btn auv-btn-text" disabled={updatingCredential !== null || (app.credential!.status !== 'ACTIVE' && app.status !== 'ACCEPTED')} onClick={() => handleCredentialStatus(app.credential!.id, app.credential!.status === 'ACTIVE' ? 'REVOKED' : 'ACTIVE')}>{updatingCredential === app.credential!.id ? 'Saving…' : app.credential!.status === 'ACTIVE' ? 'Revoke' : 'Reactivate'}</button><button type="button" className="auv-btn auv-btn-text" onClick={() => onOpenVerificationPreview(app.credential!.verificationToken)}>Verify <ExternalLink className="h-3.5 w-3.5" /></button></div></li>)}</ul> : <p className="text-[#edd2ab]">Accept an application to issue the first event pass.</p>}
+          {(dashboard?.applications || []).some(app => app.credential) ? <ul className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">{dashboard?.applications.filter(app => app.credential).map(app => <li key={app.id} className="py-5 flex flex-wrap justify-between items-center gap-4"><div><p className="text-base">{app.applicantName}</p><p className="text-xs text-[#FCFAF7]/60 mt-2">{app.credential!.participantCode} · {app.credential!.roleCategory}</p></div><div className="flex items-center gap-5"><span className="text-xs font-mono text-[#E6C887]">{app.credential!.status}</span><button type="button" className="auv-btn auv-btn-text" disabled={updatingCredential !== null || (app.credential!.status !== 'ACTIVE' && app.status !== 'ACCEPTED')} onClick={() => handleCredentialStatus(app.credential!.id, app.credential!.status === 'ACTIVE' ? 'REVOKED' : 'ACTIVE')}>{updatingCredential === app.credential!.id ? 'Saving…' : app.credential!.status === 'ACTIVE' ? 'Revoke' : 'Reactivate'}</button><button type="button" className="auv-btn auv-btn-text" onClick={() => onOpenVerificationPreview(app.credential!.verificationToken)}>Verify <ExternalLink className="h-3.5 w-3.5" /></button></div></li>)}</ul> : <p className="text-[#E6C887]">Accept an application to issue the first event pass.</p>}
         </section>
       )}
       {activeTab === 'PARTICIPANTS' && (
         <section className="max-w-4xl">
-          <p className="text-xs font-mono tracking-[.25em] text-[#cf9f5d]">PEOPLE</p>
+          <p className="text-xs font-mono tracking-[.25em] text-[#E6C887]">PEOPLE</p>
           <h2 className="mt-5 mb-10 font-display text-4xl">The people making it happen.</h2>
           {(dashboard?.applications || []).filter(app => app.status === 'ACCEPTED').length === 0 ? (
-            <p className="text-[#edd2ab]">Your people will appear here as applications are accepted.</p>
-          ) : <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">
-            {(dashboard?.applications || []).filter(app => app.status === 'ACCEPTED').map(app => <li key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-6"><div><h3 className="font-sans text-base">{app.applicantName}</h3><p className="mt-1 text-sm text-[#faf6f0]/60">{app.institution}</p></div><span className="text-xs font-mono text-[#edd2ab]">{app.category}</span></li>)}
+            <p className="text-[#E6C887]">Your people will appear here as applications are accepted.</p>
+          ) : <ul className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">
+            {(dashboard?.applications || []).filter(app => app.status === 'ACCEPTED').map(app => <li key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-6"><div><h3 className="font-sans text-base">{app.applicantName}</h3><p className="mt-1 text-sm text-[#FCFAF7]/60">{app.institution}</p></div><span className="text-xs font-mono text-[#E6C887]">{app.category}</span></li>)}
           </ul>}
         </section>
       )}
       {activeTab === 'RESOURCES' && (
         <section className="max-w-4xl">
-          <p className="text-xs font-mono tracking-[.25em] text-[#cf9f5d]">PROGRAMME</p>
+          <p className="text-xs font-mono tracking-[.25em] text-[#E6C887]">PROGRAMME</p>
           <div className="mt-5 mb-10 flex flex-wrap items-end justify-between gap-5"><h2 className="font-display text-4xl">The moments you’re shaping.</h2><button type="button" className="auv-btn auv-btn-secondary" onClick={() => handleSelectTab('SCHEDULE')}>Edit programme <ArrowRight className="h-4 w-4" /></button></div>
-          {context?.sessions.length === 0 ? <p className="text-[#edd2ab]">Nothing scheduled yet. Build the first moment.</p> : <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">{context?.sessions.map(moment => <li key={moment.id} className="py-7"><p className="text-xs font-mono text-[#cf9f5d]">{moment.track} · {moment.dayLabel}</p><h3 className="font-display text-3xl mt-3">{moment.title}</h3><p className="mt-3 max-w-2xl text-sm text-[#faf6f0]/70 leading-relaxed">{moment.description}</p>{moment.speaker && <p className="text-xs text-[#edd2ab] mt-3">With {moment.speaker}</p>}</li>)}</ul>}
-          {(context?.resources.length || 0) > 0 && <div className="mt-12 border-t border-[#edd2ab]/15 pt-8"><h3 className="font-display text-2xl mb-5">Event resources</h3>{context?.resources.map(resource => <p key={resource.id} className="py-3 text-sm text-[#edd2ab]">{resource.title} · {resource.category}</p>)}</div>}
+          {context?.sessions.length === 0 ? <p className="text-[#E6C887]">Nothing scheduled yet. Build the first moment.</p> : <ul className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">{context?.sessions.map(moment => <li key={moment.id} className="py-7"><p className="text-xs font-mono text-[#E6C887]">{moment.track} · {moment.dayLabel}</p><h3 className="font-display text-3xl mt-3">{moment.title}</h3><p className="mt-3 max-w-2xl text-sm text-[#FCFAF7]/70 leading-relaxed">{moment.description}</p>{moment.speaker && <p className="text-xs text-[#E6C887] mt-3">With {moment.speaker}</p>}</li>)}</ul>}
+          {(context?.resources.length || 0) > 0 && <div className="mt-12 border-t border-[#E6C887]/15 pt-8"><h3 className="font-display text-2xl mb-5">Event resources</h3>{context?.resources.map(resource => <p key={resource.id} className="py-3 text-sm text-[#E6C887]">{resource.title} · {resource.category}</p>)}</div>}
         </section>
       )}
 
@@ -1877,17 +1881,17 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           {/* Left 6 Columns: Clean Publishing Surface */}
           <div className="lg:col-span-6 space-y-6">
             <div className="space-y-1">
-              <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+              <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                 NEW UPDATE
               </p>
-              <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+              <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
                 Publish to Event
               </h2>
             </div>
 
             <form onSubmit={handlePublishAnnouncement} className="space-y-6">
               <div className="space-y-2">
-                <label className="block text-xs text-[#edd2ab]">Audience</label>
+                <label className="block text-xs text-[#E6C887]">Audience</label>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { id: 'ALL_APPLICANTS', label: 'Everyone' },
@@ -1900,8 +1904,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                       onClick={() => setAnnAudience(aud.id as any)}
                       className={`px-4 py-2 text-xs transition-colors cursor-pointer whitespace-nowrap ${
                         annAudience === aud.id
-                          ? 'bg-[#cf9f5d] text-[#0d0608] font-semibold'
-                          : 'border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#1a0206]'
+                          ? 'bg-[#E6C887] text-[#080203] font-semibold'
+                          : 'border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#120608]'
                       }`}
                     >
                       {aud.label}
@@ -1912,11 +1916,11 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-[#edd2ab]">Type</label>
+                  <label className="block text-xs text-[#E6C887]">Type</label>
                   <select
                     value={annType}
                     onChange={(e) => setAnnType(e.target.value)}
-                    className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   >
                     <option value="GENERAL">General</option>
                     <option value="SCHEDULE">Schedule</option>
@@ -1926,11 +1930,11 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-[#edd2ab]">Priority</label>
+                  <label className="block text-xs text-[#E6C887]">Priority</label>
                   <select
                     value={annPriority}
                     onChange={(e) => setAnnPriority(e.target.value as any)}
-                    className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   >
                     <option value="STANDARD">Standard</option>
                     <option value="IMPORTANT">Important</option>
@@ -1938,13 +1942,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs text-[#edd2ab]">
+                  <label className="block text-xs text-[#E6C887]">
                     Link Location
                   </label>
                   <select
                     value={annAttachedVenueId}
                     onChange={(e) => setAnnAttachedVenueId(e.target.value)}
-                    className="w-full px-3 py-2.5 text-xs bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0]"
+                    className="w-full px-3 py-2.5 text-xs bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7]"
                   >
                     <option value="">None</option>
                     {context?.venues.map((v) => (
@@ -1957,33 +1961,33 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs text-[#edd2ab]">Headline</label>
+                <label className="block text-xs text-[#E6C887]">Headline</label>
                 <input
                   type="text"
                   required
                   value={annTitle}
                   onChange={(e) => setAnnTitle(e.target.value)}
                   placeholder="e.g., Doors now open 15 minutes earlier"
-                  className="w-full px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0] focus:outline-none focus:border-[#cf9f5d]"
+                  className="w-full px-4 py-3 text-sm bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7] focus:outline-none focus:border-[#E6C887]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs text-[#edd2ab]">Message</label>
+                <label className="block text-xs text-[#E6C887]">Message</label>
                 <textarea
                   rows={4}
                   required
                   value={annBody}
                   onChange={(e) => setAnnBody(e.target.value)}
                   placeholder="Write a concise update for your audience..."
-                  className="w-full px-4 py-3 text-sm bg-[#1a0206] border border-[#cf9f5d]/35 text-[#faf6f0] focus:outline-none focus:border-[#cf9f5d]"
+                  className="w-full px-4 py-3 text-sm bg-[#120608] border border-[#E6C887]/35 text-[#FCFAF7] focus:outline-none focus:border-[#E6C887]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={publishingAnn}
-                className="px-7 py-3 text-xs font-semibold tracking-widest bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer disabled:opacity-50"
+                className="px-7 py-3 text-xs font-semibold tracking-widest bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer disabled:opacity-50"
               >
                 {publishingAnn ? 'PUBLISHING...' : 'PUBLISH'}
               </button>
@@ -1991,14 +1995,14 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           </div>
 
           {/* Right 6 Columns: Published Updates */}
-          <div className="lg:col-span-6 space-y-6 lg:border-l lg:border-[#cf9f5d]/15 lg:pl-10">
-            <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+          <div className="lg:col-span-6 space-y-6 lg:border-l lg:border-[#E6C887]/15 lg:pl-10">
+            <p className="text-xs font-mono tracking-widest text-[#E6C887]">
               PUBLISHED UPDATES
             </p>
-            <div className="divide-y divide-[#cf9f5d]/15 border-t border-[#cf9f5d]/15">
+            <div className="divide-y divide-[#E6C887]/15 border-t border-[#E6C887]/15">
               {context?.announcements.map((a) => (
                 <div key={a.id} className="py-5 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#cf9f5d]">
+                  <div className="flex items-center justify-between text-xs font-mono text-[#E6C887]">
                     <span>
                       {a.audience === 'ALL_APPLICANTS'
                         ? 'EVERYONE'
@@ -2006,7 +2010,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         ? 'PARTICIPANTS'
                         : 'ORGANISERS'}
                     </span>
-                    <span className="text-[#faf6f0]/50">
+                    <span className="text-[#FCFAF7]/50">
                       {a.publishedAt
                         ? new Date(a.publishedAt).toLocaleTimeString([], {
                             hour: '2-digit',
@@ -2015,10 +2019,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         : ''}
                     </span>
                   </div>
-                  <h3 className="text-xl font-display text-[#faf6f0]">
+                  <h3 className="text-xl font-display text-[#FCFAF7]">
                     {a.title}
                   </h3>
-                  <p className="text-xs text-[#faf6f0]/70 leading-relaxed">
+                  <p className="text-xs text-[#FCFAF7]/70 leading-relaxed">
                     {a.body}
                   </p>
                 </div>
@@ -2033,24 +2037,24 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
       {/* =================================================================== */}
       {selectedApp && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs" onMouseDown={e => { if (e.target === e.currentTarget) setSelectedAppId(null); }}>
-          <div ref={appSheetRef} role="dialog" aria-modal="true" aria-label="Review application" tabIndex={-1} className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between p-8 overflow-y-auto">
+          <div ref={appSheetRef} role="dialog" aria-modal="true" aria-label="Review application" tabIndex={-1} className="w-full max-w-lg bg-[#080203] border-l border-[#E6C887]/35 h-full flex flex-col justify-between p-8 overflow-y-auto">
             <div className="space-y-8">
-              <div className="flex items-start justify-between gap-4 border-b border-[#cf9f5d]/20 pb-5">
+              <div className="flex items-start justify-between gap-4 border-b border-[#E6C887]/20 pb-5">
                 <div className="space-y-1">
-                  <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                  <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                     APPLICATION
                   </p>
-                  <h2 className="text-3xl font-display font-normal text-[#faf6f0]">
+                  <h2 className="text-3xl font-display font-normal text-[#FCFAF7]">
                     {selectedApp.applicantName}
                   </h2>
-                  <p className="text-xs font-mono text-[#edd2ab]/80">
+                  <p className="text-xs font-mono text-[#E6C887]/80">
                     {selectedApp.institution}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedAppId(null)}
-                  className="p-2 text-[#faf6f0]/60 hover:text-[#faf6f0] cursor-pointer"
+                  className="p-2 text-[#FCFAF7]/60 hover:text-[#FCFAF7] cursor-pointer"
                   aria-label="Close application sheet"
                 >
                   <X className="w-4 h-4" />
@@ -2058,8 +2062,8 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               </div>
 
               {/* Status Morph Indicator */}
-              <div className="flex items-center justify-between py-4 border-b border-[#cf9f5d]/15">
-                <span className="text-xs font-mono text-[#faf6f0]/60">
+              <div className="flex items-center justify-between py-4 border-b border-[#E6C887]/15">
+                <span className="text-xs font-mono text-[#FCFAF7]/60">
                   STATUS
                 </span>
                 <span
@@ -2067,7 +2071,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     selectedApp.status === 'ACCEPTED'
                       ? 'text-emerald-300'
                       : selectedApp.status === 'UNDER_REVIEW'
-                      ? 'text-[#cf9f5d]'
+                      ? 'text-[#E6C887]'
                       : 'text-red-300'
                   }`}
                 >
@@ -2078,28 +2082,28 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs font-mono text-[#faf6f0]/55">PROGRAMME</p>
-                <p className="text-base text-[#faf6f0]">
+                <p className="text-xs font-mono text-[#FCFAF7]/55">PROGRAMME</p>
+                <p className="text-base text-[#FCFAF7]">
                   {selectedApp.category}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs font-mono text-[#faf6f0]/55">STATEMENT</p>
-                <p className="text-sm text-[#faf6f0]/85 leading-relaxed">
+                <p className="text-xs font-mono text-[#FCFAF7]/55">STATEMENT</p>
+                <p className="text-sm text-[#FCFAF7]/85 leading-relaxed">
                   {selectedApp.statement}
                 </p>
               </div>
 
               {selectedApp.credential && (
-                <div className="p-5 border border-[#cf9f5d]/30 bg-[#1a0206] space-y-3">
+                <div className="p-5 border border-[#E6C887]/30 bg-[#120608] space-y-3">
                   <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-[#cf9f5d]">CREDENTIAL</span>
+                    <span className="text-[#E6C887]">CREDENTIAL</span>
                     <span className="text-emerald-300">
                       {selectedApp.credential.status}
                     </span>
                   </div>
-                  <p className="text-sm font-mono text-[#faf6f0] tabular-nums">
+                  <p className="text-sm font-mono text-[#FCFAF7] tabular-nums">
                     {selectedApp.credential.participantCode}
                   </p>
                   <button
@@ -2109,7 +2113,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         selectedApp.credential!.verificationToken
                       )
                     }
-                    className="text-xs text-[#edd2ab] hover:text-[#faf6f0] inline-flex items-center gap-1.5 underline cursor-pointer"
+                    className="text-xs text-[#E6C887] hover:text-[#FCFAF7] inline-flex items-center gap-1.5 underline cursor-pointer"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     Open Verification View
@@ -2119,7 +2123,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             </div>
 
             {/* Side Sheet Actions */}
-            <div className="pt-6 border-t border-[#cf9f5d]/20 flex flex-wrap items-center gap-3">
+            <div className="pt-6 border-t border-[#E6C887]/20 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 disabled={
@@ -2129,7 +2133,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 onClick={() =>
                   handleReviewApplication(selectedApp.id, 'ACCEPTED')
                 }
-                className="flex-1 py-3 px-5 text-xs font-semibold tracking-widest bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+                className="flex-1 py-3 px-5 text-xs font-semibold tracking-widest bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
               >
                 <Check className="w-4 h-4" />
                 ACCEPT
@@ -2144,7 +2148,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                 onClick={() =>
                   handleReviewApplication(selectedApp.id, 'REJECTED')
                 }
-                className="py-3 px-5 text-xs font-semibold tracking-widest border border-[#cf9f5d]/35 text-[#edd2ab] hover:bg-[#1a0206] transition-colors cursor-pointer disabled:opacity-40"
+                className="py-3 px-5 text-xs font-semibold tracking-widest border border-[#E6C887]/35 text-[#E6C887] hover:bg-[#120608] transition-colors cursor-pointer disabled:opacity-40"
               >
                 REJECT
               </button>
@@ -2160,22 +2164,22 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-xs" onMouseDown={e => { if (e.target === e.currentTarget) setSelectedSession(null); }}>
           <form ref={sessionSheetRef} role="dialog" aria-modal="true" aria-label="Edit session" tabIndex={-1}
             onSubmit={handleSaveSessionSheet}
-            className="w-full max-w-lg bg-[#0d0608] border-l border-[#cf9f5d]/35 h-full flex flex-col justify-between p-8 overflow-y-auto"
+            className="w-full max-w-lg bg-[#080203] border-l border-[#E6C887]/35 h-full flex flex-col justify-between p-8 overflow-y-auto"
           >
             <div className="space-y-8">
-              <div className="flex items-start justify-between gap-4 border-b border-[#cf9f5d]/20 pb-5">
+              <div className="flex items-start justify-between gap-4 border-b border-[#E6C887]/20 pb-5">
                 <div className="space-y-1">
-                  <p className="text-xs font-mono tracking-widest text-[#cf9f5d] tabular-nums">
+                  <p className="text-xs font-mono tracking-widest text-[#E6C887] tabular-nums">
                     {selectedSession.startTime}
                   </p>
-                  <h2 className="text-3xl font-display font-normal text-[#faf6f0] uppercase">
+                  <h2 className="text-3xl font-display font-normal text-[#FCFAF7] uppercase">
                     {selectedSession.title}
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedSession(null)}
-                  className="p-2 text-[#faf6f0]/60 hover:text-[#faf6f0] cursor-pointer"
+                  className="p-2 text-[#FCFAF7]/60 hover:text-[#FCFAF7] cursor-pointer"
                   aria-label="Close session sheet"
                 >
                   <X className="w-4 h-4" />
@@ -2184,24 +2188,24 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
 
               {/* CURRENT LOCATION */}
               <div className="space-y-1.5">
-                <p className="text-xs font-mono tracking-widest text-[#faf6f0]/55">
+                <p className="text-xs font-mono tracking-widest text-[#FCFAF7]/55">
                   CURRENT LOCATION
                 </p>
-                <p className="text-2xl font-mono font-semibold text-[#edd2ab] uppercase">
+                <p className="text-2xl font-mono font-semibold text-[#E6C887] uppercase">
                   {selectedSession.venueName || 'No destination selected.'}
                 </p>
               </div>
 
               {/* CHANGE LOCATION */}
               <div className="space-y-3">
-                <p className="text-xs font-mono tracking-widest text-[#cf9f5d]">
+                <p className="text-xs font-mono tracking-widest text-[#E6C887]">
                   CHANGE LOCATION
                 </p>
                 {(context?.venues || []).length === 0 && (
-                  <p className="text-sm text-[#faf6f0]/60">No venue yet.</p>
+                  <p className="text-sm text-[#FCFAF7]/60">No venue yet.</p>
                 )}
                 <div className="grid grid-cols-2 gap-2.5">
-                  <button type="button" className="p-4 text-left border border-[#cf9f5d]/30 text-[#edd2ab]" onClick={() => setTargetVenueId(null)}>Not assigned yet</button>
+                  <button type="button" className="p-4 text-left border border-[#E6C887]/30 text-[#E6C887]" onClick={() => setTargetVenueId(null)}>Not assigned yet</button>
                   {context?.venues.map((v) => {
                     const isSelected = targetVenueId === v.id;
                     return (
@@ -2211,14 +2215,14 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                         onClick={() => setTargetVenueId(v.id)}
                         className={`p-4 text-left border transition-colors cursor-pointer ${
                           isSelected
-                            ? 'border-[#cf9f5d] bg-[#24040a] text-[#faf6f0]'
-                            : 'border-[#cf9f5d]/25 bg-[#1a0206] text-[#edd2ab]/80 hover:border-[#cf9f5d]/60'
+                            ? 'border-[#E6C887] bg-[#17090C] text-[#FCFAF7]'
+                            : 'border-[#E6C887]/25 bg-[#120608] text-[#E6C887]/80 hover:border-[#E6C887]/60'
                         }`}
                       >
                         <p className="text-sm font-mono font-semibold uppercase">
                           {v.name}
                         </p>
-                        <p className="text-[11px] text-[#faf6f0]/55 mt-0.5">
+                        <p className="text-[11px] text-[#FCFAF7]/55 mt-0.5">
                           {v.floor}
                         </p>
                       </button>
@@ -2230,7 +2234,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               {/* TIME & STATUS */}
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono text-[#faf6f0]/55">
+                  <label className="block text-xs font-mono text-[#FCFAF7]/55">
                     START TIME
                   </label>
                   <input
@@ -2238,11 +2242,11 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     aria-label="Session start time"
                     value={targetStartTime}
                     onChange={(e) => setTargetStartTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] tabular-nums"
+                    className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#120608] border border-[#E6C887]/30 text-[#FCFAF7] tabular-nums"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono text-[#faf6f0]/55">
+                  <label className="block text-xs font-mono text-[#FCFAF7]/55">
                     END TIME
                   </label>
                   <input
@@ -2250,13 +2254,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                     aria-label="Session end time"
                     value={targetEndTime}
                     onChange={(e) => setTargetEndTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#1a0206] border border-[#cf9f5d]/30 text-[#faf6f0] tabular-nums"
+                    className="w-full px-3.5 py-2.5 text-sm font-mono bg-[#120608] border border-[#E6C887]/30 text-[#FCFAF7] tabular-nums"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-[#cf9f5d]/20 flex items-center gap-3">
+            <div className="pt-6 border-t border-[#E6C887]/20 flex items-center gap-3">
               <button
                 type="submit"
                 disabled={
@@ -2264,14 +2268,14 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
                   !targetStartTime ||
                   !targetEndTime
                 }
-                className="flex-1 py-3.5 px-6 text-xs font-semibold tracking-widest bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors cursor-pointer disabled:opacity-50"
+                className="flex-1 py-3.5 px-6 text-xs font-semibold tracking-widest bg-[#E51E2B] text-[#FCFAF7] hover:bg-[#C41224] transition-colors cursor-pointer disabled:opacity-50"
               >
                 {updatingSession ? 'UPDATING...' : 'UPDATE'}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedSession(null)}
-                className="py-3.5 px-5 text-xs border border-[#cf9f5d]/30 text-[#edd2ab] hover:bg-[#1a0206] cursor-pointer"
+                className="py-3.5 px-5 text-xs border border-[#E6C887]/30 text-[#E6C887] hover:bg-[#120608] cursor-pointer"
               >
                 CANCEL
               </button>
