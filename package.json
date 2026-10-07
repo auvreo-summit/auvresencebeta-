@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && node scripts/build-vercel-backend.mjs",
+    "build": "node scripts/initialize-production-db.mjs && vite build && node scripts/build-vercel-backend.mjs",
     "start": "NODE_ENV=production tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
