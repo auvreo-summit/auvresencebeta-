@@ -14,6 +14,7 @@ export const createPool = () => {
       user: process.env.DATABASE_URL ? undefined : process.env.SQL_USER,
       password: process.env.DATABASE_URL ? undefined : process.env.SQL_PASSWORD,
       database: process.env.DATABASE_URL ? undefined : process.env.SQL_DB_NAME,
+      port: process.env.DATABASE_URL ? undefined : Number(process.env.SQL_PORT || 5432),
       max: 10,
       connectionTimeoutMillis: 15000,
     });

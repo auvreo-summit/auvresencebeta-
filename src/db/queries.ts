@@ -1,5 +1,6 @@
 import crypto from 'crypto';
-import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
+import { ProfileStorageError } from './errors.ts';
+import { and, asc, desc, eq, inArray, ne, sql, getTableColumns, getTableName } from 'drizzle-orm';
 import { db } from './index.ts';
 import {
   announcements,
@@ -34,14 +35,21 @@ export class EventAccessDeniedError extends Error {
   }
 }
 
-export async function checkDatabaseHealth(): Promise<boolean> {
+export async function inspectDatabaseHealth() {
   try {
-    await db.select({ id: organisations.id }).from(organisations).limit(1);
-    return true;
+    const result = await db.execute(sql`select table_name, column_name from information_schema.columns where table_schema = current_schema()`);
+    const present = new Set(result.rows.map((row: any) => `${row.table_name}.${row.column_name}`));
+    const requiredTables = [users, organisations, events, eventOrganisers, applications, credentials, announcements, resources, sessions, venues, venueFloors, venueEdges, waypointScans, auditLogs];
+    const missing = requiredTables.flatMap(table => Object.values(getTableColumns(table)).map(column => `${getTableName(table)}.${column.name}`)).filter(column => !present.has(column));
+    return { connected: true, schemaReady: missing.length === 0 };
   } catch (error) {
-    console.error('Database health check failed:', error);
-    return false;
+    console.error('Database readiness check failed:', error);
+    return { connected: false, schemaReady: false };
   }
+}
+export async function checkDatabaseHealth(): Promise<boolean> {
+  const status = await inspectDatabaseHealth();
+  return status.connected && status.schemaReady;
 }
 
 export async function getOrCreateUser(
@@ -66,8 +74,8 @@ export async function getOrCreateUser(
         displayName: cleanName,
         institution: isDemoSeed
           ? 'Chandigarh University, Uttar Pradesh (Showcase Account)'
-          : 'Verified Delegate Affiliation',
-        activeRole: uid.includes('organiser') ? 'ORGANISER' : 'PARTICIPANT',
+          : null,
+        activeRole: isDemoSeed && uid.includes('organiser') ? 'ORGANISER' : 'PARTICIPANT',
         isDemoSeed,
       })
       .onConflictDoUpdate({
@@ -81,7 +89,7 @@ export async function getOrCreateUser(
     return result[0];
   } catch (error) {
     console.error('Database query failed in getOrCreateUser:', error);
-    throw new Error('Failed to synchronize user profile.', { cause: error });
+    throw new ProfileStorageError(error);
   }
 }
 
@@ -1556,80 +1564,82 @@ export async function reviewApplicationByOrganiser(input: {
   reviewerEmail: string;
 }) {
   try {
-    const appRows = await db
-      .select()
-      .from(applications)
-      .where(eq(applications.id, input.applicationId));
-    const app = appRows[0];
-    if (!app) {
-      throw new Error('Application not found.');
-    }
+    return await db.transaction(async (tx) => {
+      const appRows = await tx
+        .select()
+        .from(applications)
+        .where(eq(applications.id, input.applicationId)).for('update');
+      const app = appRows[0];
+      if (!app) {
+        throw new Error('Application not found.');
+      }
 
-    const [updatedApp] = await db
-      .update(applications)
-      .set({
-        status: input.status,
-        reviewedByUserId: input.reviewerUserId,
-        reviewedAt: new Date(),
-      })
-      .where(eq(applications.id, input.applicationId))
-      .returning();
+      const [updatedApp] = await tx
+        .update(applications)
+        .set({
+          status: input.status,
+          reviewedByUserId: input.reviewerUserId,
+          reviewedAt: new Date(),
+        })
+        .where(eq(applications.id, input.applicationId))
+        .returning();
 
-    let credentialRecord = null;
-    const existingCreds = await db
-      .select()
-      .from(credentials)
-      .where(eq(credentials.applicationId, app.id));
+      let credentialRecord = null;
+      const existingCreds = await tx
+        .select()
+        .from(credentials)
+        .where(eq(credentials.applicationId, app.id));
 
-    if (input.status === 'ACCEPTED') {
-      if (existingCreds.length > 0) {
-        const [reactivated] = await db
+      if (input.status === 'ACCEPTED') {
+        if (existingCreds.length > 0) {
+          const [reactivated] = await tx
+            .update(credentials)
+            .set({
+              status: 'ACTIVE',
+              roleCategory: app.category,
+            })
+            .where(eq(credentials.id, existingCreds[0].id))
+            .returning();
+          credentialRecord = reactivated;
+        } else {
+          const [createdCred] = await tx
+            .insert(credentials)
+            .values({
+              applicationId: app.id,
+              eventId: app.eventId,
+              userId: app.userId,
+              participantCode: generateParticipantCode(app.id),
+              verificationToken: 'auv_verify_' + generateOpaqueToken(18),
+              roleCategory: app.category,
+              status: 'ACTIVE',
+            })
+            .returning();
+          credentialRecord = createdCred;
+        }
+      } else if (existingCreds.length > 0) {
+        const [revoked] = await tx
           .update(credentials)
-          .set({
-            status: 'ACTIVE',
-            roleCategory: app.category,
-          })
+          .set({ status: 'REVOKED' })
           .where(eq(credentials.id, existingCreds[0].id))
           .returning();
-        credentialRecord = reactivated;
-      } else {
-        const [createdCred] = await db
-          .insert(credentials)
-          .values({
-            applicationId: app.id,
-            eventId: app.eventId,
-            userId: app.userId,
-            participantCode: generateParticipantCode(app.id),
-            verificationToken: 'auv_verify_' + generateOpaqueToken(18),
-            roleCategory: app.category,
-            status: 'ACTIVE',
-          })
-          .returning();
-        credentialRecord = createdCred;
+        credentialRecord = revoked;
       }
-    } else if (existingCreds.length > 0) {
-      const [revoked] = await db
-        .update(credentials)
-        .set({ status: 'REVOKED' })
-        .where(eq(credentials.id, existingCreds[0].id))
-        .returning();
-      credentialRecord = revoked;
-    }
 
-    await db.insert(auditLogs).values({
-      eventId: app.eventId,
-      actorUserId: input.reviewerUserId,
-      actorEmail: input.reviewerEmail,
-      action: `APPLICATION_${input.status}`,
-      resourceType: 'APPLICATION',
-      resourceId: String(app.id),
-      details: `Application for ${app.applicantName} marked as ${input.status}.`,
+      await tx.insert(auditLogs).values({
+        eventId: app.eventId,
+        actorUserId: input.reviewerUserId,
+        actorEmail: input.reviewerEmail,
+        action: `APPLICATION_${input.status}`,
+        resourceType: 'APPLICATION',
+        resourceId: String(app.id),
+        details: `Application for ${app.applicantName} marked as ${input.status}.`,
+      });
+
+      return {
+        application: updatedApp,
+        credential: credentialRecord,
+      };
     });
-
-    return {
-      application: updatedApp,
-      credential: credentialRecord,
-    };
   } catch (error) {
     console.error(
       'Database query failed in reviewApplicationByOrganiser:',
@@ -2843,7 +2853,7 @@ export async function createEventByUser(input: {
       const [org] = await tx
         .insert(organisations)
         .values({
-          slug: slugify(input.organisationName) + '-' + crypto.randomInt(100, 999),
+          slug: slugify(input.organisationName) + '-' + crypto.randomUUID().slice(0, 12),
           name: input.organisationName,
           description: `Host organisation for ${input.title}`,
           headquarters: input.organisationHq || input.location,
@@ -2858,7 +2868,7 @@ export async function createEventByUser(input: {
       const [createdEvent] = await tx
         .insert(events)
         .values({
-          slug: slugify(input.title) + '-' + crypto.randomInt(100, 999),
+          slug: slugify(input.title) + '-' + crypto.randomUUID().slice(0, 12),
           organisationId: org.id,
           title: input.title,
           subtitle: input.subtitle,

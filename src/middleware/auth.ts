@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { adminAuth } from '../lib/firebase-admin.ts';
 import { getOrCreateUser } from '../db/queries.ts';
+import { ProfileStorageError, databaseFailure } from '../db/errors.ts';
 
 export interface AuthenticatedUser {
   id: number;
@@ -156,6 +157,11 @@ export const requireAuth = async (
     req.dbUser = dbUser;
     return next();
   } catch (error) {
+    if (error instanceof ProfileStorageError) {
+      console.error('Authenticated profile storage failed:', error);
+      const failure = databaseFailure(error);
+      return res.status(failure?.status || 503).json(failure || { code: 'PROFILE_UNAVAILABLE', error: 'Your identity is verified, but your profile could not be loaded. Please try again.' });
+    }
     console.error('Error verifying authentication token:', error);
     return res.status(401).json({
       error: 'Unauthorized: Invalid or unverified identity token.',

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { databaseFailure } from './src/db/errors.ts';
 import { answerEventQuestion } from './src/lib/event-answers.ts';
 import express from 'express';
 import type { Request, Response } from 'express';
@@ -17,6 +18,7 @@ import {
 import { adminAuth } from './src/lib/firebase-admin.ts';
 import {
   checkDatabaseHealth,
+  inspectDatabaseHealth,
   computeVenueRoute,
   createAnnouncementByOrganiser,
   createEventByUser,
@@ -114,7 +116,8 @@ async function resolveOptionalUser(req: AuthRequest) {
 // ============================================================================
 
 async function handleHealthCheck(_req: Request, res: Response) {
-  const dbHealthy = await checkDatabaseHealth();
+  const dbStatus = await inspectDatabaseHealth();
+  const dbHealthy = dbStatus.connected && dbStatus.schemaReady;
   const aiReady = isAiConfigured();
   const voiceReady = isVoiceConfigured();
   const sttReady = isSttConfigured();
@@ -124,7 +127,8 @@ async function handleHealthCheck(_req: Request, res: Response) {
 
   return res.status(dbHealthy ? 200 : 503).json({
     server: true,
-    database: dbHealthy ? 'available' : 'unavailable',
+    database: dbHealthy ? 'available' : dbStatus.connected ? 'needs-schema-update' : 'unavailable',
+    schemaReady: dbStatus.schemaReady,
     ai: aiReady ? 'configured' : 'unconfigured',
     voice: voiceReady ? 'configured' : 'unconfigured',
     vision: visionReady ? 'configured' : 'unconfigured',
@@ -580,9 +584,10 @@ app.post('/api/events', requireAuth, async (req: AuthRequest, res: Response) => 
 
     return res.status(201).json({ event: created });
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ error: 'Failed to create event.' });
+    console.error('Event creation failed:', error);
+    const failure = databaseFailure(error);
+    if (failure) return res.status(failure.status).json(failure);
+    return res.status(500).json({ code: 'EVENT_CREATE_FAILED', error: 'Could not create your event. Your details are kept here; please try again.' });
   }
 });
 
@@ -2175,7 +2180,7 @@ app.post(
 // ============================================================================
 
 async function startServer() {
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT || 3000);
 
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');

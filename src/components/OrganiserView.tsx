@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Check,
   ExternalLink,
-  Sparkles,
+  ArrowUpRight,
   X,
 } from 'lucide-react';
 import type {
@@ -17,6 +17,7 @@ import type {
 import type { ActionArchitectureTrace } from './ActionXRayModal.tsx';
 
 export type OrganiserTab =
+  | 'CREDENTIALS'
   | 'OVERVIEW'
   | 'APPLICATIONS'
   | 'SCHEDULE'
@@ -692,9 +693,9 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
   const upNext = context?.pulse.upNext || null;
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 py-10 lg:py-12 space-y-12 pb-28 md:pb-16">
+    <div className="studio-shell max-w-[1440px] mx-auto px-5 sm:px-8 py-8 lg:py-10 pb-28 md:pb-16">
       {/* STUDIO COMMAND HEADER */}
-      <div className="flex flex-col gap-6 border-b border-[#cf9f5d]/20 pb-6">
+      <div className="studio-header border-b border-[#edd2ab]/15 pb-7">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono tracking-widest">
             <span className="text-[#cf9f5d]">AUVRESENCE / STUDIO</span>
@@ -718,8 +719,10 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           </h1>
         </div>
 
+      </div>
+
         {/* Studio Navigation Tabs */}
-        <div role="navigation" aria-label="Studio navigation" className="flex items-center gap-6 overflow-x-auto pb-1 text-xs tracking-widest uppercase">
+        <div role="navigation" aria-label="Studio navigation" className="studio-rail">
           {[
             { id: 'OVERVIEW', label: 'Overview' },
             { id: 'APPLICATIONS', label: 'Applications' },
@@ -727,6 +730,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
             { id: 'RESOURCES', label: 'Programme' },
             { id: 'SCHEDULE', label: 'Schedule' },
             { id: 'VENUES', label: 'Venue' },
+            { id: 'CREDENTIALS', label: 'Credentials' },
             { id: 'LIVE', label: 'Live' },
             { id: 'ANNOUNCEMENTS', label: 'Announcements' },
           ].map((t) => (
@@ -751,12 +755,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
               onClick={() => onOpenAskAuvresence()}
               className="py-1.5 text-[#edd2ab] hover:text-[#faf6f0] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#cf9f5d]" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
               Ask
             </button>
           )}
         </div>
-      </div>
+
+      <div className="studio-workspace">
 
       {/* CLEAN STATE CONFIRMATION NOTICE */}
       {statusNotice && (
@@ -1805,6 +1810,13 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
         </div>
       )}
 
+      {activeTab === 'CREDENTIALS' && (
+        <section>
+          <p className="text-xs font-mono tracking-[.2em] text-[#cf9f5d]">CREDENTIALS</p>
+          <h2 className="font-display text-4xl mt-4 mb-8">Identity, issued.</h2>
+          {(dashboard?.applications || []).some(app => app.credential) ? <ul className="divide-y divide-[#edd2ab]/15 border-t border-[#edd2ab]/15">{dashboard?.applications.filter(app => app.credential).map(app => <li key={app.id} className="py-5 flex flex-wrap justify-between items-center gap-4"><div><p className="text-base">{app.applicantName}</p><p className="text-xs text-[#faf6f0]/60 mt-2">{app.credential!.participantCode} · {app.credential!.roleCategory}</p></div><div className="flex items-center gap-5"><span className="text-xs font-mono text-[#edd2ab]">{app.credential!.status}</span><button type="button" className="auv-btn auv-btn-text" onClick={() => onOpenVerificationPreview(app.credential!.verificationToken)}>Verify <ExternalLink className="h-3.5 w-3.5" /></button></div></li>)}</ul> : <p className="text-[#edd2ab]">Accept an application to issue the first event pass.</p>}
+        </section>
+      )}
       {activeTab === 'PARTICIPANTS' && (
         <section className="max-w-4xl">
           <p className="text-xs font-mono tracking-[.25em] text-[#cf9f5d]">PEOPLE</p>
@@ -2233,6 +2245,7 @@ export const OrganiserView: React.FC<OrganiserViewProps> = ({
           </form>
         </div>
       )}
+      </div>
     </div>
   );
 };

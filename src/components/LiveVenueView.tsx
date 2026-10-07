@@ -1,7 +1,7 @@
 import { PoiIcon } from './PoiIcon.tsx';
 import React, { useState, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Check, Navigation, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, Navigation, ArrowUpRight } from 'lucide-react';
 import type {
   ComputedRouteStep,
   EventFullContext,
@@ -415,7 +415,7 @@ export const LiveVenueView: React.FC<LiveVenueViewProps> = ({
           onClick={() => onOpenAskAuvresence('Where do I go next?')}
           className="text-xs font-medium text-[#edd2ab] hover:text-[#faf6f0] inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#cf9f5d]" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
           Where do I go next?
         </button>
       </div>

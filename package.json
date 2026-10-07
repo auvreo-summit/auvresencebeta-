@@ -13,7 +13,9 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "test:integration": "node scripts/smoke.mjs",
     "db:push": "drizzle-kit push --config src/db/drizzle.config.ts",
-    "db:local": "node scripts/local-db.mjs"
+    "db:local": "node scripts/local-db.mjs",
+    "test:normal-journey": "node --import tsx scripts/test-normal-journey.ts",
+    "test:schema-recovery": "node scripts/test-schema-recovery.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

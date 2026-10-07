@@ -6,7 +6,7 @@ import {
   onIdTokenChanged,
   type User as FirebaseUser,
 } from 'firebase/auth';
-import { Sparkles } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { auth, googleAuthProvider } from './lib/firebase.ts';
 import type {
   EventFullContext,
@@ -862,7 +862,7 @@ export default function App() {
               aria-label="Ask Auvresence"
               className="px-2 sm:px-4 min-h-11 py-2 text-xs font-medium bg-[#1a0206] border border-[#cf9f5d]/40 text-[#edd2ab] hover:bg-[#24040a] hover:border-[#cf9f5d] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#cf9f5d]" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#cf9f5d]" />
               <span className="hidden sm:inline">Ask Auvresence</span><span className="sm:hidden">Ask</span>
             </button>
           )}

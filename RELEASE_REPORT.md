@@ -1,3 +1,39 @@
+# Auvresence emergency pass — 7 October 2026
+
+## Functional
+
+Event creation now diagnoses database/schema failures with actionable responses. Migration commands target the runtime DATABASE_URL, preserve TLS parameters, and optionally use the explicit migration identity. Health checks validate all expected schema columns. Profile-storage failures no longer masquerade as invalid Firebase tokens. Event and organisation slugs use longer random identifiers. Real accounts default to participant without fabricated affiliations; event ownership still permits Studio access.
+
+Acceptance, credential issuance/reactivation/revocation, and audit logging now share one transaction with an application row lock. An intentionally failed audit write was verified to roll back both acceptance and credential creation.
+
+A real POST failure was reproduced in an isolated PostgreSQL database by removing an expected event column. The server returned 503 DATABASE_SCHEMA_OUTDATED; migration repaired that same database, then POST returned 201 and the event was re-read from PostgreSQL. This proves a repaired failure mode; it does not establish the cause of the unobserved failure on the user's machine.
+
+## Visual
+
+Studio now has a compact desktop sidebar, responsive mobile navigation, and a Credentials view backed by issued passes with working verification navigation. Participant greetings use sentence case. Home has a Continue my journey action. The entrance retains its central composer; decorative sparkle icons were replaced with directional icons.
+
+## QA
+
+- TypeScript checking and production build passed.
+- 15 unit tests passed; no failures or skipped tests.
+- 53 authenticated showcase API assertions passed against real PostgreSQL.
+- 20 non-demo account database assertions passed, including creation by a participant-role owner, second-user application, rollback, acceptance, credential verification, private journey access and organiser isolation. This database test does not exercise Google authentication.
+- Isolated schema-recovery POST test passed before/after migration.
+- Chromium captured 76 screens at 1440×900, 1280×800, 390×844 and 430×932: zero page errors and zero document horizontal overflow. Primary desktop/mobile Studio and participant screenshots were visually inspected; not every captured screen received individual inspection.
+- Browser creation reached persisted confirmation and Enter Studio. Deterministic Ask returned an actual event-state API answer; Escape closed its dialog. Valid issued credential verification rendered successfully.
+
+## Limits and verdict
+
+The latest uploaded ZIP exceeds the attachment download tool's 32 MiB limit, so this pass uses the existing repository checkout and the supplied emergency brief. No comparison against that ZIP is claimed. The actual Google-authenticated failure on the user's machine cannot be reproduced without that machine's runtime/session. Firebase verification remains enabled and unchanged; no authentication bypass was introduced.
+
+**Local application checks passed. Live-demo readiness remains unverified until the intended Google-authenticated two-user journey is exercised.** No deployment was published. External AI/voice/vision providers and hosted database access remain unverified.
+
+Run instructions are in README.md. Reusable cloud startup instructions are saved for environment-settings review; a draft save does not publish an environment or prove restoration in a new task.
+
+---
+
+The previous pass report is retained below for historical scope; its test counts and Studio navigation description predate this pass.
+
 # Auvresence release report — 7 October 2026
 
 The supplied archive was restored into the existing empty checkout and improved in place. Firebase, PostgreSQL, Drizzle, server-derived identity, and deterministic graph routing remain intact. The release is prepared for source delivery through GitHub. No deployment was published.

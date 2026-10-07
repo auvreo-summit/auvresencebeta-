@@ -141,7 +141,9 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!value.trim()) return;
-    setReply(interpret(value, signedIn));
+    const result = interpret(value, signedIn);
+    setReply(result);
+    if (result.kind === 'JOURNEYS') requestAnimationFrame(() => document.getElementById('your-journeys')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }));
   };
 
   const hello = greeting(user?.displayName);
@@ -336,6 +338,7 @@ export const EntryCanvas: React.FC<EntryCanvasProps> = ({
           >
             Explore Events
           </button>
+          {signedIn && <button type="button" className="min-h-11 text-xs tracking-[.2em] text-[#faf6f0]/70 hover:text-[#edd2ab]" onClick={() => document.getElementById('your-journeys')?.scrollIntoView({ behavior: 'auto', block: 'start' })}>Continue my journey</button>}
           <span aria-hidden="true" className="hidden sm:block h-4 w-px bg-[#cf9f5d]/35" />
           <button
             type="button"

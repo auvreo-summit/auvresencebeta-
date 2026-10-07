@@ -126,3 +126,21 @@ input, textarea, select { max-width: 100%; }
 
 .create-section-label { padding-top: 1.5rem; border-top: 1px solid rgb(237 210 171 / .14); color: var(--auv-gold); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .22em; }
 @media (max-width: 640px) { .auv-entrance main { padding-top: 8vh; } }
+
+/* Studio is a working environment; the participant world keeps its own rhythm. */
+.studio-shell { display: grid; grid-template-columns: 1fr; gap: 28px; }
+.studio-header { min-width: 0; }
+.studio-rail { display:flex; gap:22px; align-items:center; overflow-x:auto; min-width:0; padding-bottom:4px; }
+.studio-rail button { flex-shrink:0; font-size:12px; min-height:44px; letter-spacing:.025em; }
+.studio-workspace { min-width:0; display:flex; flex-direction:column; gap:36px; }
+@media (min-width: 1024px) {
+ .studio-shell { grid-template-columns: 190px minmax(0,1fr); column-gap:44px; row-gap:36px; }
+ .studio-header { grid-column:1 / -1; }
+ .studio-rail { flex-direction:column; align-items:stretch; gap:3px; position:sticky; top:100px; align-self:start; overflow:visible; border-right:1px solid rgb(237 210 171 / .12); padding-right:24px; }
+ .studio-rail button { text-align:left; justify-content:flex-start; padding:0 14px; border-bottom:0; border-left:2px solid transparent; }
+ .studio-rail button[aria-current="page"] { border-left-color:var(--auv-gold); color:var(--auv-ivory); background:rgb(237 210 171 / .04); }
+ .studio-rail button:last-child { margin-top:24px; border-top:1px solid rgb(237 210 171 / .12); padding-top:12px; }
+ .studio-workspace h2 { letter-spacing:-.025em; }
+}
+.auv-entrance input { font-family:var(--font-sans); }
+.auv-entrance form { box-shadow:0 14px 60px rgb(0 0 0 / .12); }

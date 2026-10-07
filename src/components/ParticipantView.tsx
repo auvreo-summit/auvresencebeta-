@@ -6,7 +6,7 @@ import {
   Copy,
   ExternalLink,
   Play,
-  Sparkles,
+  ArrowUpRight,
   Volume2,
 } from 'lucide-react';
 import type {
@@ -148,14 +148,13 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
   const getGreeting = () => {
     const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: context.event.timezone || 'UTC', hour: 'numeric', hourCycle: 'h23' }).format(nowTime));
     const prefix =
-      h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+      h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     const first = (
       myApp?.applicantName ||
       user?.displayName ||
       'THERE'
     )
-      .split(' ')[0]
-      .toUpperCase();
+      .split(' ')[0];
     return `${prefix}, ${first}.`;
   };
 
@@ -588,7 +587,7 @@ export const ParticipantView: React.FC<ParticipantViewProps> = ({
                 onClick={() => onOpenAskAuvresence()}
                 className="px-5 py-3 text-xs font-semibold tracking-wider bg-[#cf9f5d] text-[#0d0608] hover:bg-[#edd2ab] transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <ArrowUpRight className="w-3.5 h-3.5" />
                 Ask Auvresence
               </button>
             </div>

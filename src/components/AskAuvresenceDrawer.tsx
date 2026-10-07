@@ -5,7 +5,7 @@ import {
   Image as ImageIcon,
   Mic,
   Send,
-  Sparkles,
+  ArrowUpRight,
   Volume2,
   X,
 } from 'lucide-react';
