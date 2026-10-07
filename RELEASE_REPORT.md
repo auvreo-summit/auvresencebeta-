@@ -1,5 +1,7 @@
 # AUVRESENCE FINAL QA
 
+This report records the earlier local QA pass. Current deployed-domain recovery evidence and blockers are in [PRODUCTION_RECOVERY.md](PRODUCTION_RECOVERY.md).
+
 7 October 2026. Source delivery only; no deployment was published.
 
 | Area | Result | Evidence or limitation |
